@@ -18,8 +18,6 @@ void main()
 		case 'i': scanf("%d", &op3);//inserir
 		case 'p': //printar
 	}
-
-	return 0;
 }
 
 struct red_black_tree
