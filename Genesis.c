@@ -26,4 +26,5 @@ struct red_black_tree
 	int color;//também não tenho certeza se aqui precisa ser um inteiro.
 	red_black_tree *left;
 	red_black_tree *right;
+	red_black_tree *parent;
 };
