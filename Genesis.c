@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-int main()
+#include <string.h>
+#include <limits.h>
+void main()
 {
-return 0;
+
 }
