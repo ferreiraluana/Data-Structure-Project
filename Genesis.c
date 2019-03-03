@@ -1,3 +1,5 @@
+//se tiver alguma coisa errada, pergunte para a equipe e corrija se achar necessário
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
