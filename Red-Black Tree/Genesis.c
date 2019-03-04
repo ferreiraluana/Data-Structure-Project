@@ -44,7 +44,7 @@ void main()
 
 		switch(op1)
 			{
-				case 'i': scanf("%", &op3)/*Não sei como faz referência para void para scanear a variável, se alguem descobrir corrige aqui.*/; 
+				case 'i': scanf("%", &op3)/*Não sei como faz referência para void para scanear a variável, se alguem descobrir corrige aqui.*/;
 				new_rbt = insert(new_rbt, op3)//inserir
 				case 'p': //printar
 				case 'c': //checkar/consultar
@@ -60,7 +60,9 @@ struct red_black_tree
 	red_black_tree *right;
 	red_black_tree *parent;
 };
-
+/// DEFININDO:
+///COLOR = 1 ==> RED
+///COLOR = 0 ==> BLACK
 rbt *create_empty_bstree(void){return NULL;}
 
 bool is_empty(rbt *avp){return (avp == NULL);}
@@ -81,7 +83,7 @@ rbt *insert(rbt *avp, void *item)
 	rbt *temp = (rbt*)malloc(1 * sizeof(rbt));
 
 	//if (is_empty(temp)){puts("\aErro de memória. Saindo do programa..."); exit(1);}
-	
+
 	if (check(avp,item) == -1)//se a árvore tiver algum nó vazio,adiciona;
 	{
 		temp->item = item; temp->left = NULL; temp->right = NULL; temp->color = 1; /*a cor de adição é sempre vermelha,a variável temporaria
@@ -90,14 +92,15 @@ rbt *insert(rbt *avp, void *item)
 		rbt *x = avp; //cria-se uma variável temporária que serve como "auxiliar" com os valores de avp;
 		rbt *y = NULL; //isso sim é uma variavel auxiliar;
 
-		while(!is_empty(x)) //se o lugar que x aponta que recebeu avp não estiver vazia,procuramos o seu lugar/nó na árvore
+		while(!is_empty(x)) //enquanto o lugar que x aponta (onde recebeu avp) não estiver vazia,procuramos o seu lugar/nó na árvore
 		{
 			y = x; //serve como um auxiliar que compara as ponteiros/arvores
 			if (temp->item < x->item){x = x->left;}
 			else{x = x->right;}
-		} temp->parent = y;
+		}
+		temp->parent = y;
 
-		if (is_empty(y)){avp = z;} //
+		if (is_empty(y)) {avp = z;} //
 		else
 		{
 			if (temp->item < y->item){y->left = temp;}
@@ -109,7 +112,7 @@ rbt *insert(rbt *avp, void *item)
 	return (avp);
 }
 
-rbt *check(rbt *avp, void *item)// função básica que percorre a árvore em log(n)
+int check(rbt *avp, void *item)// função básica que percorre a árvore em log(n) e retorna se achou (1) ou nao achou(-1)
 {
 	if (avp == NULL){return (-1);} //se estiver vazia retorna que não encontrou,simples
 	else
@@ -117,9 +120,9 @@ rbt *check(rbt *avp, void *item)// função básica que percorre a árvore em lo
 		if (item == avp->item){return 1;} //caso tenha encontrado
 		else
 		{
-			if (item > avp->item){return check(avp->left,item);} /* se o item da função tiver valor maior que o item da struct, vasculha 
-			a esquerda numa recursão*/
-			else{return check(avp->right,item);} // se não for maior, vasculha a direita.
+			if (item > avp->item){return check(avp->right,item);} /* se o item que estou procurando tiver valor maior que o item da struct, vasculha
+			a direita numa recursão*/
+			else{return check(avp->left,item);} // se não for maior, vasculha a esquerda.
 		}
 	}
 }
