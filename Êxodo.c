@@ -3,25 +3,26 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
-typedef struct binary_tree binary_tree;
+typedef struct btree btree; //Binary Tree
 typedef struct node node;
-typedef struct queue queue;
+typedef struct queue queue; // pra que esse queue?
+typedef unsigned char byte;
 
-struct binary_tree
+struct btree
 {
-    int frequency;
-    unsigned char c;
-    binary_tree *left;
-    binary_tree *right;
+    int frequence;
+    byte c;
+    btree *left;
+    btree *right;
 };
 
 struct node
 {
-    binary_tree *item;//
+    btree *item;
     node *next;
 };
 
-node* add_node(binary_tree *bt)
+node* add_node(btree *bt)
 {
     node *new_node;
     new_node = (node*) malloc(sizeof(node));
@@ -33,21 +34,21 @@ node* add_node(binary_tree *bt)
     return new_node;
 }
 
-binary_tree* create_binary_tree(unsigned char c, int freq, binary_tree *left, binary_tree *right)
+btree* create_btree(byte c, int freq, btree *left, btree *right)
 {
-    binary_tree *new_binary_tree;
-    new_binary_tree = (binary_tree*) malloc(sizeof(binary_tree));
+    btree *new_btree;
+    new_btree = (btree*) malloc(sizeof(btree));
 
-    if(new_binary_tree == NULL) return NULL;
+    if(new_btree == NULL) return NULL;
 
-    new_binary_tree->c = c;
-    new_binary_tree->frequency = freq;
-    new_binary_tree->left = left;
-    new_binary_tree->right = right;
-    return new_binary_tree;
+    new_btree->c = c;
+    new_btree->frequency = freq;
+    new_btree->left = left;
+    new_btree->right = right;
+    return new_btree;
 }
 
-binary_tree* create_huffman_tree(unsigned bytes)
+btree* create_huffman_tree(unsigned bytes)
 
 {
 
@@ -57,15 +58,15 @@ binary_tree* create_huffman_tree(unsigned bytes)
 
 void frequencia(FILE *entrada, unsigned *bytes)
 {
-	unsigned char c;
+	byte c;
 	while(fread(&c,1,1,entrada)) bytes[c]+=1;//le o arquivo ate o final
 
 	rewind(entrada);// volta o arquivo ao seu comeco
 }
 
-compactando(FILE *entrada, unsigned *bytes)
+void compactando(FILE *entrada, unsigned *bytes)
 {
-	unsigned char c;
+	byte c;
 	frequencia(entrada,bytes);
 	int i;
 	for(i=0;i<256;i++)
@@ -75,7 +76,7 @@ compactando(FILE *entrada, unsigned *bytes)
         }
     }
 
-	//binary_tree *arv =create_huffman_tree(bytes);
+	//btree *arv =create_huffman_tree(bytes);
 
 
 
@@ -87,16 +88,20 @@ int main()
 	char arq[500];//nome do arquivo e seu tipo(ex: arquivo.txt)
 	scanf("%s",arq);
 	entrada = fopen(arq, "rb");//fopen "chama" o arquivo, fopen("arquivo.tipo", "forma") forma- r,w,a (rb,wb,ab) binario
- ///////teste desktop github
 	if(entrada == NULL) exit(0);//verifica se o arquivo eh valido
 
 	char caminho[20];
 
-	scanf("%s",caminho);//ainda falta arruma, escolha para compactar ou descompactar
+	scanf("%s",caminho);//ainda falta arrumar, escolha para compactar ou descompactar
+
+  if(!strcmp(caminho,"c"))
+  {
+
+  }
 
 	unsigned bytes[256] = {0};
 
-    compactando(entrada,bytes);
+  compactando(entrada,bytes);
 
 	return 0;
 }
