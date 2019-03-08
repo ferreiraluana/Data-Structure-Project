@@ -42,7 +42,7 @@ btree* create_btree(byte c, int freq, btree *left, btree *right)
     if(new_btree == NULL) return NULL;
 
     new_btree->c = c;
-    new_btree->frequency = freq;
+    new_btree->frequence = freq;
     new_btree->left = left;
     new_btree->right = right;
     return new_btree;
