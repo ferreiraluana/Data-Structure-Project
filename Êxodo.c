@@ -87,7 +87,7 @@ int main()
 	char arq[500];//nome do arquivo e seu tipo(ex: arquivo.txt)
 	scanf("%s",arq);
 	entrada = fopen(arq, "rb");//fopen "chama" o arquivo, fopen("arquivo.tipo", "forma") forma- r,w,a (rb,wb,ab) binario
-	int n;
+ ///////teste desktop github
 	if(entrada == NULL) exit(0);//verifica se o arquivo eh valido
 
 	char caminho[20];
