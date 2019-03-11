@@ -7,11 +7,11 @@
 /*
 
 //////////////////////////////////
-////					      ////
-////					      ////
-////	  HUFFMAN TREE	  	  ////
-////					      ////
-////					      ////
+////					                ////
+////					                ////
+////	    HUFFMAN TREE  	    ////
+////					                ////
+////					                ////
 //////////////////////////////////
 
 Code by: Ruanzinho & Dedinho & Hiago
@@ -191,7 +191,7 @@ btree *building_huff_tree(heap *hp, int t)
 
   build_max_heap(hp);
   heapsort(hp);
-  t--;
+  t++;
   hp->size = t;
 
   building_huff_tree(hp,t);
