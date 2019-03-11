@@ -12,15 +12,15 @@
 	estou usando insertion sort // worst_case = O(n^2)
 	a arvore esta correta, se quiser, teste no exemplo do slide Huffman
 	utilizei insertion para poder ordenar o array de btrees de modo que o pre-ordem ficasse certo
-
+	mas com certeza, heap deve ser melhor
 }
 
 //////////////////////////////////
 ////			      ////
 ////			      ////
 ////	  HUFFMAN TREE	      ////
-////		              ////
-////		              ////
+////			      ////
+////			      ////
 //////////////////////////////////
 
 Code by: Joao Pedro.
@@ -222,9 +222,9 @@ int main()
 	FILE *entrada;
 	char arq[500]; // nome do arquivo e seu tipo(ex: arquivo.txt)
 	printf("\n Insira o do arquivo para que seja montada sua Arvore de Huffman:  nome.tipo\n\n ");
-	//scanf("%s",arq);
+	scanf("%s",arq);
 	puts("");
-	entrada = fopen("god.txt", "rb"); // fopen "chama" o arquivo, fopen("arquivo.tipo", "forma") forma- r,w,a (rb,wb,ab) binario
+	entrada = fopen(arq, "rb"); // fopen "chama" o arquivo, fopen("arquivo.tipo", "forma") forma- r,w,a (rb,wb,ab) binario
 	if(entrada == NULL)
 	{
 		exit(1); // verifica se o arquivo eh valido
