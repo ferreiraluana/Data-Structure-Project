@@ -188,15 +188,19 @@ btree* building_huff_tree(heap *hp, btree **trees, int t,int count) /////*******
 	}
 }
 
-void dequeue(heap *hp)
+btree *dequeue(heap *hp) //// n possui a condicao de empty heap :/
 {
+    int item = hp->data[1];
+    heap->data[1] = heap->data[heap->size];
+    heap->size--;
+    max_heapify(heap, 1);
 
+    return _____;
 }
 
-void enqueue(heap *hp, unsigned freq, byte c)
+void enqueue(heap *hp, unsigned freq, byte c) ////modify swap
 {
-    hp->data[++heap->size]->frequence = freq;
-    heap->data[heap->size]->c = c;
+    hp->data[++hp->size] = create_btree(c,freq,NULL,NULL);
     int key_index = hp->size;
     int parent_index = get_parent_index(hp, hp->size);
     while (parent_index >= 1 && hp->data[key_index] > hp->data[parent_index])
