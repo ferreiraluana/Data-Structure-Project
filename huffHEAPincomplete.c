@@ -91,15 +91,11 @@ int left_index_(heap *hp,int i) { return (2*i); }
 int right_index_(heap *hp,int i) { return (2*i + 1); }
 //int what_item(heap *hp,int i) { return hp->item[i]; }
 
-void swap(byte *a, byte *b, int *x, int *y)
+void swap(btree *a, btree *b)
 {
-  byte aux = *a;
+  btree aux = *a;
   *a = *b;
   *b = aux;
-
-  int aux1 = *x;
-  *x = *y;
-  *y = aux1;
 }
 
 void max_heapify(heap *hp,int i)
@@ -121,21 +117,21 @@ void max_heapify(heap *hp,int i)
 
   if(hp->data[i]->frequence != hp->data[biggest]->frequence)
   {
-    swap(&hp->data[i]->c, &hp->data[biggest]->c, &hp->data[i]->frequence, &hp->data[biggest]->frequence);
+    swap(hp->data[i], hp->data[biggest]);
     max_heapify(hp,biggest);
   }
 }
 
-void heapsort(heap *hp)
-{
-  int i;
-  for(i = hp->size; i>=2; i--)
-  {
-    swap(&hp->data[1]->c, &hp->data[i]->c, &hp->data[1]->frequence, &hp->data[i]->frequence);
-    hp->size--;
-    max_heapify(hp,1);
-  }
-}
+// void heapsort(heap *hp)
+// {
+//   int i;
+//   for(i = hp->size; i>=2; i--)
+//   {
+//     swap(hp->data[1], hp->data[i]); /// talvez mudar o 1 do primeiro
+//     hp->size--;
+//     max_heapify(hp,1);
+//   }
+// }
 
 void build_max_heap(heap *hp)
 {
@@ -147,16 +143,16 @@ void build_max_heap(heap *hp)
   }
 }
 
-btree* copy_tree(btree *tree)
-{
-	btree *copy = (btree*) malloc(sizeof(btree));
-	copy->c = tree->c;
-	copy->frequence = tree->frequence;
-	copy->left = tree->left;
-	copy->right = tree->right;
-
-  return copy; /////***  né???
-}
+// btree* copy_tree(btree *tree)
+// {
+// 	btree *copy = (btree*) malloc(sizeof(btree));
+// 	copy->c = tree->c;
+// 	copy->frequence = tree->frequence;
+// 	copy->left = tree->left;
+// 	copy->right = tree->right;
+//
+//   return copy; /////***  né???
+// }
 
 btree* building_huff_tree(heap *hp, btree **trees, int t,int count) /////******* rever
 {
@@ -190,22 +186,22 @@ btree* building_huff_tree(heap *hp, btree **trees, int t,int count) /////*******
 
 btree *dequeue(heap *hp) //// n possui a condicao de empty heap :/
 {
-    int item = hp->data[1];
-    heap->data[1] = heap->data[heap->size];
-    heap->size--;
+    btree *aux = hp->data[1];
+    hp->data[1] = hp->data[heap->size];
+    hp->size--;
     max_heapify(heap, 1);
 
-    return _____;
+    return aux; ////////////rever
 }
 
-void enqueue(heap *hp, unsigned freq, byte c) ////modify swap
+void enqueue(heap *hp, unsigned freq, byte c)
 {
     hp->data[++hp->size] = create_btree(c,freq,NULL,NULL);
     int key_index = hp->size;
     int parent_index = get_parent_index(hp, hp->size);
     while (parent_index >= 1 && hp->data[key_index] > hp->data[parent_index])
     {
-      swap(&hp->data[key_index]->c, &hp->data[parent_index]->c, &hp->data[key_index]->frequence, &hp->data[parent_index]->frequence); //// ****************************
+      swap(hp->data[key_index], hp->data[parent_index]); //// ****************************
       key_index = parent_index;
       parent_index = get_parent_index(hp, key_index);
     }
@@ -236,13 +232,14 @@ btree* create_huffman_tree(unsigned *bytes)
         printf("%c %d\n", hp->data[i]->c, hp->data[i]->frequence);
       }
     }
+
     printf("\nDEU CERTO AEAEAEEAE SALVOU NA HEAP AAAAAAAAAAAAAA\n");
 
     hp->size = t-1;
 
-    build_max_heap(hp);
-    heapsort(hp);
-    hp->size = t-1;
+    //build_max_heap(hp);
+    //heapsort(hp);
+    //hp->size = t-1;
     puts("");
 
     printf("\nPRINT HEAPSORT:\n");
@@ -252,7 +249,7 @@ btree* create_huffman_tree(unsigned *bytes)
     }
 
 
-    huff = building_huff_tree(hp, hp->data, t,1);
+    //huff = building_huff_tree(hp, hp->data, t,1);
 
 
     return huff;
