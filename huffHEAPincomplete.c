@@ -44,12 +44,10 @@ struct heap
 ///////////////////////////////////////////////
 
 btree* create_btree(byte c, int freq, btree *left, btree *right); // cria um nova arvore
-btree* copy_tree(btree *tree); // criar uma nova arvore igual a que ele recebe
-btree* building_huff_tree(heap *hp,btree **trees, int t,int count); // montador da arvore
+//btree* building_huff_tree(heap *hp,btree **trees, int t,int count); // montador da arvore
 btree* create_huffman_tree(unsigned *bytes); // cria todas as arvores do array de arvores (com respectivos caracteres e frequencias)
 void start_trees_array(btree **trees); // inicia o array de arvores (iguala todos a NULL)
 //void swap(btree *a, btree *b); // troca a posicao de duas arvores no array de arvores
-void bubblesort(btree **trees, int t); // ordena o array de arvore (ORDENADOR TEMPORARIO // FAVOR USAR HEAP DEPOIS)
 void frequencia(FILE *entrada, unsigned *bytes); // elabora o array de frequencia cujo indices sao seus respectivos caracteres
 void print_pre(btree *tree); // imprime a arvore de huffman em pre-ordem
 void Huffman(FILE *entrada, unsigned *bytes); // funcao base para a formacao da arvore (funcao estruturadora)
@@ -86,7 +84,7 @@ heap* create_heap()
   }
 }
 
-int parent_index_(heap *hp,int i) { return (i/2); }
+int get_parent_index(heap *hp,int i) { return (i/2); }
 int left_index_(heap *hp,int i) { return (2*i); }
 int right_index_(heap *hp,int i) { return (2*i + 1); }
 //int what_item(heap *hp,int i) { return hp->item[i]; }
@@ -98,11 +96,11 @@ void swap(btree *a, btree *b)
   *b = aux;
 }
 
-void max_heapify(heap *hp,int i)
+void max_heapify(heap *hp,int i )// i = 1
 {
   int biggest;
-  int left_index = left_index_(hp,i);
-  int right_index= right_index_(hp,i);
+  int left_index = left_index_(hp,i); ///2
+  int right_index= right_index_(hp,i); //3
 
   if(left_index <= hp->size && hp->data[left_index]->frequence > hp->data[i]->frequence)
   {
@@ -122,16 +120,16 @@ void max_heapify(heap *hp,int i)
   }
 }
 
-// void heapsort(heap *hp)
-// {
-//   int i;
-//   for(i = hp->size; i>=2; i--)
-//   {
-//     swap(hp->data[1], hp->data[i]); /// talvez mudar o 1 do primeiro
-//     hp->size--;
-//     max_heapify(hp,1);
-//   }
-// }
+void heapsort(heap *hp)
+{
+  int i;
+  for(i = hp->size; i>=2; i--)
+  {
+    swap(hp->data[1], hp->data[i]); /// talvez mudar o 1 do primeiro
+    hp->size--;
+    max_heapify(hp,1);
+  }
+}
 
 void build_max_heap(heap *hp)
 {
@@ -143,63 +141,23 @@ void build_max_heap(heap *hp)
   }
 }
 
-// btree* copy_tree(btree *tree)
-// {
-// 	btree *copy = (btree*) malloc(sizeof(btree));
-// 	copy->c = tree->c;
-// 	copy->frequence = tree->frequence;
-// 	copy->left = tree->left;
-// 	copy->right = tree->right;
-//
-//   return copy; /////***  né???
-// }
-
-btree* building_huff_tree(heap *hp, btree **trees, int t,int count) /////******* rever
-{
-	btree *sum = NULL;
-	btree *right = NULL;
-	btree *left = NULL;
-	if(count == t-1)
-	{
-		return trees[count];
-	}
-	else
-	{
-		byte c = '*';
-		right = copy_tree(trees[count]);
-		left = copy_tree(trees[count+1]);
-		sum = (btree*) malloc(sizeof(btree));
-		sum->c = c;
-		sum->frequence = (right->frequence + left->frequence);
-		sum->right = right;
-		sum->left = left;
-		//free(trees[count]);
-		//free(trees[count+1]);
-		trees[count+1] = sum;
-		t--;
-    count+=1;
-    hp->size = t-1; // ********************** talvez tenha q tirar daqui
-		heapsort(hp); // *******************rever
-		building_huff_tree(hp,trees, t,count);
-	}
-}
-
 btree *dequeue(heap *hp) //// n possui a condicao de empty heap :/
 {
     btree *aux = hp->data[1];
-    hp->data[1] = hp->data[heap->size];
+    hp->data[1] = hp->data[hp->size];
     hp->size--;
-    max_heapify(heap, 1);
+    max_heapify(hp, 1);
 
-    return aux; ////////////rever
+    return aux;
 }
 
-void enqueue(heap *hp, unsigned freq, byte c)
+void enqueue(heap *hp, btree *tree)
 {
-    hp->data[++hp->size] = create_btree(c,freq,NULL,NULL);
+    hp->size++;
+    hp->data[hp->size] = tree;
     int key_index = hp->size;
     int parent_index = get_parent_index(hp, hp->size);
-    while (parent_index >= 1 && hp->data[key_index] > hp->data[parent_index])
+    while (parent_index >= 1 && hp->data[key_index]->frequence <= hp->data[parent_index]->frequence)
     {
       swap(hp->data[key_index], hp->data[parent_index]); //// ****************************
       key_index = parent_index;
@@ -207,9 +165,42 @@ void enqueue(heap *hp, unsigned freq, byte c)
     }
 }
 
+btree *building_huff_tree(heap *hp, int t)
+{
+  if(hp->size == 1)
+    return hp->data[1];
+
+  btree *left = dequeue(hp);
+  build_max_heap(hp);
+  heapsort(hp);
+  t--;
+  hp->size = t;
+
+  btree *right = dequeue(hp);
+  build_max_heap(hp);
+  heapsort(hp);
+  t--;
+  hp->size = t;
+
+  btree *sum = (btree*) malloc(sizeof(btree));
+  sum->c = '*';
+  sum->frequence = (left->frequence + right->frequence);
+  sum->left = left;
+  sum->right = right;
+  enqueue(hp,sum);
+
+  build_max_heap(hp);
+  heapsort(hp);
+  t--;
+  hp->size = t;
+
+  building_huff_tree(hp,t);
+}
+
 btree* create_huffman_tree(unsigned *bytes)
 {
-    int i,t = 1;
+    int i,t = 0;
+    btree *aux;
     heap *hp = create_heap();
     btree *huff= NULL;
 
@@ -219,11 +210,11 @@ btree* create_huffman_tree(unsigned *bytes)
     {
       if(bytes[i] != 0)
       {
-          enqueue(hp,bytes[i],i);
+          aux = create_btree(i,bytes[i],NULL,NULL);
+          enqueue(hp,aux);
           t++;
       }
     }
-
     printf("\nAPOS ADICIONAR NA HEAP, OS NUMEROS FICAM:\n");
     for(i=1;i<=256;i++) /// teste antes do heapsort das freq na heap
     {
@@ -235,21 +226,21 @@ btree* create_huffman_tree(unsigned *bytes)
 
     printf("\nDEU CERTO AEAEAEEAE SALVOU NA HEAP AAAAAAAAAAAAAA\n");
 
-    hp->size = t-1;
+    hp->size = t;
 
-    //build_max_heap(hp);
-    //heapsort(hp);
-    //hp->size = t-1;
+    build_max_heap(hp);
+    heapsort(hp);
+    hp->size = t;
     puts("");
 
     printf("\nPRINT HEAPSORT:\n");
-    for(i=1;i<t;i++)
+    for(i=1;i<=t;i++)
     {
       printf("%c %d\n", hp->data[i]->c, hp->data[i]->frequence);
     }
 
 
-    //huff = building_huff_tree(hp, hp->data, t,1);
+    huff = building_huff_tree(hp, t); //// master of segmentation ;-;
 
 
     return huff;
@@ -317,12 +308,12 @@ int main()
   int numero;
 	char arq[500]; // nome do arquivo e seu tipo(ex: arquivo.txt)
 	printf("\n Insira o nome.tipo do arquivo para que seja montada sua Arvore de Huffman:\n\n ");
-	scanf("%s",arq);
+	//scanf("%s",arq);
 	puts("");
-	entrada = fopen(arq, "rb"); // fopen "chama" o arquivo, fopen("arquivo.tipo", "forma") forma- r,w,a (rb,wb,ab) binario
+	entrada = fopen("amem.txt", "rb"); // fopen "chama" o arquivo, fopen("arquivo.tipo", "forma") forma- r,w,a (rb,wb,ab) binario
 	if(entrada == NULL)
 	{
-		exit(0); // verifica se o arquivo eh valido
+		exit(1); // verifica se o arquivo eh valido
 	}
 
 	char caminho[20];
@@ -332,7 +323,5 @@ int main()
 
     Huffman(entrada,bytes); // criar a arvore de huffman pelo arquivo inserido
 
-    printf("\naaaaaaaaaaaaaaaaaaaaaa\n");
-    scanf("%d", &numero);
 	return 0;
 }
