@@ -3,10 +3,32 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
+
+/*
+
+(Pre_ordem correta mas pessimo algoritmo de ordenacao)
+{
+
+	estou usando insertion sort // worst_case = O(n^2)
+	a arvore esta correta, se quiser, teste no exemplo do slide Huffman
+	utilizei insertion para poder ordenar o array de btrees de modo que o pre-ordem ficasse certo
+	mas com certeza, heap deve ser melhor
+}
+
+//////////////////////////////////
+////			      ////
+////			      ////
+////	  HUFFMAN TREE	      ////
+////			      ////
+////			      ////
+//////////////////////////////////
+
+Code by: Joao Pedro.
+
+*/
+
 typedef struct btree btree; //Binary Tree
-typedef struct node node;
-typedef struct queue queue; // pra que esse queue?
-typedef unsigned char byte;
+typedef unsigned char byte; //Byte = 8 bits = [0|0|0|0|0|0|0|0] = que a gente usa para add o char na arvore
 
 struct btree
 {
@@ -16,23 +38,28 @@ struct btree
     btree *right;
 };
 
-struct node
-{
-    btree *item;
-    node *next;
-};
+//
+///////////
+///////////////////////
+///////////////////////////////////
+///////////////////////////////////////////////
 
-node* add_node(btree *bt)
-{
-    node *new_node;
-    new_node = (node*) malloc(sizeof(node));
+btree* create_btree(byte c, int freq, btree *left, btree *right); // cria um nova arvore
+btree* copy_tree(btree *tree); // criar uma nova arvore igual a que ele recebe
+btree* building_huff_tree(btree **trees, int t, int i); // montador da arvore
+btree* create_huffman_tree(unsigned *bytes); // cria todas as arvores do array de arvores (com respectivos caracteres e frequencias)
+void start_trees_array(btree **trees); // inicia o array de arvores (iguala todos a NULL)
+void insertionsort(btree **trees, int c, int t); // ordena o array de arvore (ORDENADOR TEMPORARIO // FAVOR USAR HEAP DEPOIS)
+void frequencia(FILE *entrada, unsigned *bytes); // elabora o array de frequencia cujo indices sao seus respectivos caracteres
+void print_pre(btree *tree); // imprime a arvore de huffman em pre-ordem
+void Huffman(FILE *entrada, unsigned *bytes); // funcao base para a formacao da arvore (funcao estruturadora)
+int main(); // onde a magica acontece :D (PS: INT MAIN nao quero saber)
 
-    if(new_node == NULL) return NULL;
-
-    new_node->item = bt;
-    new_node->next = NULL;
-    return new_node;
-}
+///////////////////////////////////////////////
+///////////////////////////////////
+///////////////////////
+///////////
+//
 
 btree* create_btree(byte c, int freq, btree *left, btree *right)
 {
@@ -48,60 +75,167 @@ btree* create_btree(byte c, int freq, btree *left, btree *right)
     return new_btree;
 }
 
-btree* create_huffman_tree(unsigned bytes)
-
+btree* copy_tree(btree *tree)
 {
+	btree *copy = (btree*) malloc(sizeof(btree));
+	copy->c = tree->c;
+	copy->frequence = tree->frequence;
+	copy->left = tree->left;
+	copy->right = tree->right;
+	return copy;
+}
 
-	//ai vem a parte da fila ou do heap,acho eu
+btree* building_huff_tree(btree **trees, int t, int i)
+{
+	btree *sum = NULL;
+	btree *right = NULL;
+	btree *left = NULL;
+	if(i == t-1)
+	{
+		return trees[i];
+	}
+	else
+	{
+		byte c = '*';
+		right = copy_tree(trees[i+1]);
+		left = copy_tree(trees[i]);
+		sum = (btree*) malloc(sizeof(btree));
+		sum->c = c;
+		sum->frequence = (right->frequence + left->frequence);
+		sum->left = left;
+		sum->right = right;
+		//free(trees[i+1]);
+		//free(trees[i]);
+		trees[i+1] = sum;
+		i++;
+		insertionsort(trees, i, t);
+		building_huff_tree(trees, t, i);
+	}
+}
 
+btree* create_huffman_tree(unsigned *bytes)
+{
+    int i,t = 1;
+    btree *new_arv = NULL;
+    btree *huff = NULL;
+    btree *trees[257];//array de arvores que usarei para fazer a soma dps
+    start_trees_array(trees);
+    for(i=1;i<=256;i++)
+    {
+        if(bytes[i] != 0)//temos uma frequencia aqui
+        {
+            new_arv = (btree*) malloc(sizeof(btree));
+            new_arv->frequence = bytes[i];
+            new_arv->c = i;
+            new_arv->left = NULL;
+            new_arv->right = NULL;
+            trees[t] = new_arv;
+            t++;
+            new_arv = NULL;
+        }
+    }
+    insertionsort(trees, 1, t);
+    puts("");
+    for(i=1;i<t;i++)
+    {
+        printf("%c",trees[i]->c);
+    }
+    puts("");
+    huff = building_huff_tree(trees, t, 1);
+    return huff;
+}
+
+void start_trees_array(btree **trees)
+{
+    for(int i = 0;i<=256;i++)
+    {
+        trees[i] = NULL;
+    }
+}
+
+void insertionsort(btree **tree, int c, int t)
+{
+	int i,j;
+	btree *aux;
+	for(i = c+1 ; i < t; i++)
+	{
+		aux = tree[i];
+		for(j = i; (j>1) && (aux->frequence < tree[j-1]->frequence); j--)
+		{
+			tree[j] = tree[j - 1];
+		}
+		tree[j] = aux;
+	}
 }
 
 void frequencia(FILE *entrada, unsigned *bytes)
 {
 	byte c;
-	while(fread(&c,1,1,entrada)) bytes[c]+=1;//le o arquivo ate o final
+	while(fread(&c,1,1,entrada))
+	{
+		bytes[c]+=1; // le o arquivo ate o final
+	}
 
-	rewind(entrada);// volta o arquivo ao seu comeco
+	rewind(entrada); // volta o arquivo ao seu comeco
 }
 
-void compactando(FILE *entrada, unsigned *bytes)
+void print_pre(btree *tree)
+{
+	if(tree != NULL)
+	{
+	    printf("%c",tree->c);
+		print_pre(tree->left);
+		print_pre(tree->right);
+
+	}
+}
+
+void Huffman(FILE *entrada, unsigned *bytes)
 {
 	byte c;
-	frequencia(entrada,bytes);
+
+	frequencia(entrada,bytes);//funcao made by ruanzinho para achar a frequencia
+
 	int i;
-	for(i=0;i<256;i++)
+	puts("");
+	printf(" Caracteres e suas respectivas frequencias:\n\n");
+	for(i = 0 ;i < 256; i++ )// printa os caracteres e suas frequencias do arquivo
     {
-        if(bytes[i]!=0){
-            //printf("%d %c\n",bytes[i],i);
+        if(bytes[i] != 0)
+        {
+            printf(" %c %d\n", i, bytes[i]);
         }
     }
 
-	//btree *arv =create_huffman_tree(bytes);
+	btree *huff = create_huffman_tree(bytes);
 
+	puts("");
+	printf(" Arvore de Huffman em pre_ordem:\n\n ");
 
+	print_pre(huff);//printa em pre ordem
 
+	puts("");
 }
 
 int main()
 {
 	FILE *entrada;
-	char arq[500];//nome do arquivo e seu tipo(ex: arquivo.txt)
+	char arq[500]; // nome do arquivo e seu tipo(ex: arquivo.txt)
+	printf("\n Insira o do arquivo para que seja montada sua Arvore de Huffman:  nome.tipo\n\n ");
 	scanf("%s",arq);
-	entrada = fopen(arq, "rb");//fopen "chama" o arquivo, fopen("arquivo.tipo", "forma") forma- r,w,a (rb,wb,ab) binario
-	if(entrada == NULL) exit(0);//verifica se o arquivo eh valido
+	puts("");
+	entrada = fopen(arq, "rb"); // fopen "chama" o arquivo, fopen("arquivo.tipo", "forma") forma- r,w,a (rb,wb,ab) binario
+	if(entrada == NULL)
+	{
+		exit(1); // verifica se o arquivo eh valido
+	}
 
 	char caminho[20];
+	//scanf("%s",caminho); // ainda falta arrumar, escolha para compactar ou descompactar
 
-	scanf("%s",caminho);//ainda falta arrumar, escolha para compactar ou descompactar
+	unsigned bytes[257] = {0};
 
-  if(!strcmp(caminho,"c"))
-  {
-
-  }
-
-	unsigned bytes[256] = {0};
-
-  compactando(entrada,bytes);
+    Huffman(entrada,bytes); // criar a arvore de huffman pelo arquivo inserido
 
 	return 0;
 }
