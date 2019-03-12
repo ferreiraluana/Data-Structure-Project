@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #define MAX_SIZE 257
 /*
-
 /////////////////////////////////
 ////                         ////
 ////                         ////
@@ -13,12 +12,13 @@
 ////                         ////
 ////                         ////
 /////////////////////////////////
-
 */
 
 typedef struct btree btree; //Binary Tree
 typedef unsigned char byte; //Byte = 8 bits = [0|0|0|0|0|0|0|0] = que a gente usa para add o char na arvore
 typedef struct heap heap; // Heap
+typedef struct hash_table hash; // Dicionary
+typedef struct element element; // Dicionary Item
 
 struct btree
 {
@@ -34,34 +34,61 @@ struct heap
   btree *data[MAX_SIZE];
 };
 
+struct element
+{
+  char binary[100];
+};
+
+struct hash_table
+{
+  element *table[256];
+};
+
 //
 ///////////
 ///////////////////////
 ///////////////////////////////////
 ///////////////////////////////////////////////
 
-heap* create_heap(); // cria uma heap de btrees 
+hash* create_dicionary(); // cria o dicionario
+heap* create_heap(); // cria uma heap de btrees
 btree* create_btree(byte c, int freq, btree *left, btree *right); // cria um nova arvore
 btree *building_huff_tree(heap *hp, int t); // usa a heap para montar a arvore
 btree* create_huffman_tree(unsigned *freq); // cria todas as arvores na heap (com respectivos caracteres e frequencias)
+btree* Huffman(FILE *entrada, unsigned *freq); // funcao base para a formacao da arvore (funcao estruturadora)
 btree *dequeue(heap *hp); // remove o item da heap
 void enqueue(heap *hp, btree *tree); // adiciona o item na heap
-void max_heapify(heap *hp, int i); // 
+void max_heapify(heap *hp, int i); // funcao complementar da heapsort()
 void heapsort(heap *hp); // ordenar a heap
-void build_max_heap(heap *hp); // 
-int get_parent_index(heap *hp,int i); // 
-int left_index_(heap *hp,int i); // 
-int right_index_(heap *hp,int i); // 
+void build_max_heap(heap *hp); // funcao complementar da heapsort()
+int get_parent_index(heap *hp,int i); // funcao complementar da heapsort()
+int left_index_(heap *hp,int i); // funcao complementar da heapsort()
+int right_index_(heap *hp,int i); // funcao complementar da heapsort()
 void swap(btree *a, btree *b); // troca duas arvores na heap
 void frequencia(FILE *entrada, unsigned *freq); // elabora o array de frequencia cujo indices sao seus respectivos caracteres
 void print_pre(btree *tree); // imprime a arvore de huffman em pre-ordem
-void Huffman(FILE *entrada, unsigned *freq); // funcao base para a formacao da arvore (funcao estruturadora)
+char* add_l(char *binary, int *i); // funcao complementar da Hash()
+char* add_r(char *binary, int *i); // funcao complementar da Hash()
+void put(hash *hs, byte indice, char *binary); // adiciona o binario do caracter no dicionario
+void Hash(hash *hs, btree *arv, char *binary, int *i); // funcao base da criacao do dicionario
+void print_dicionary(hash *hs); // printa o dicionario por ordem da tabela ASCII
 
 ///////////////////////////////////////////////
 ///////////////////////////////////
 ///////////////////////
 ///////////
 //
+
+hash* create_dicionary()
+{
+  hash *new_hash = (hash*) malloc(sizeof(hash));
+  int i;
+  for (i = 0; i < 256; i++) 
+  {
+    new_hash->table[i] = NULL;
+  }
+  return new_hash;
+}
 
 heap* create_heap()
 {
@@ -167,6 +194,35 @@ btree* create_huffman_tree(unsigned *freq)
     return huff;
 }
 
+btree* Huffman(FILE *entrada, unsigned *freq)
+{
+  byte c;
+
+  frequencia(entrada,freq); //funcao para achar a frequencia
+
+  int i;
+  puts("");
+  printf(" PRINT DO ARRAY INICIAL\nCaracteres e suas respectivas frequencias:\n\n");
+  for(i = 0 ;i < 256; i++ )// printa os caracteres e suas frequencias do arquivo
+  {
+    if(freq[i] != 0)
+    {
+      printf(" %c %d\n", i, freq[i]);
+    }
+  }
+
+  btree *huff = create_huffman_tree(freq); // manda o array de frequencias para que seja construida a arvore
+
+  puts("");
+
+  printf("\n Arvore de Huffman em pre-ordem:\n\n ");
+
+  print_pre(huff);//printa em pre ordem
+
+  puts("");
+  return huff;
+}
+
 btree *dequeue(heap *hp) // remove o item da heap
 {
   btree *aux = hp->data[1];
@@ -203,9 +259,9 @@ void max_heapify(heap *hp, int i)
       biggest =  left_index;
     }
     else { biggest = i; }
-  
+
     if(right_index <= hp->size && hp->data[right_index]->frequence > hp->data[biggest]->frequence) biggest = right_index;
-  
+
     if(hp->data[i]->frequence != hp->data[biggest]->frequence)
     {
       swap(hp->data[i], hp->data[biggest]);
@@ -269,38 +325,67 @@ void print_pre(btree *tree)
   }
 }
 
-void Huffman(FILE *entrada, unsigned *freq)
+char* add_l(char *binary, int *i)
 {
-  byte c;
+    binary[i[0]] = '0';
+    i[0]++;
 
-  frequencia(entrada,freq); //funcao para achar a frequencia
+    return binary;
+}
 
-  int i;
-  puts("");
-  printf(" PRINT DO ARRAY INICIAL\nCaracteres e suas respectivas frequencias:\n\n");
-  for(i = 0 ;i < 256; i++ )// printa os caracteres e suas frequencias do arquivo
+char* add_r(char *binary, int *i)
+{
+    binary[i[0]] = '1';
+    i[0]++;
+
+    return binary;
+}
+
+void put(hash *hs, byte indice, char *binary)
+{
+  element *new_element = (element*) malloc(sizeof(element));
+  strcpy(new_element->binary, binary);
+  hs->table[indice] = new_element;
+}
+
+void Hash(hash *hs, btree *arv, char *binary, int *i)
+{
+  if(arv != NULL)
   {
-    if(freq[i] != 0)
+    if(arv->left == NULL && arv->right == NULL)
     {
-      printf(" %c %d\n", i, freq[i]);
+      put(hs, arv->c, binary);
+      binary[i[0]] = NULL;
+      i[0]--;
+      return;
+    }
+    binary = add_l(binary,i);
+    Hash(hs, arv->left, binary, i);
+    binary = add_r(binary,i);
+    Hash(hs, arv->right, binary, i);
+    binary[i[0]] = NULL;
+    i[0]--;
+  }
+}
+
+void print_dicionary(hash *hs)
+{
+  for(int i=0;i<256;i++)
+  {
+    if(hs->table[i] != NULL)
+    {
+      printf(" %c\n ",i);
+      puts(hs->table[i]->binary);
     }
   }
-
-  btree *huff = create_huffman_tree(freq); // manda o array de frequencias para que seja construida a arvore
-
-  puts("");
-
-  printf("\n Arvore de Huffman em pre-ordem:\n\n ");
-
-  print_pre(huff);//printa em pre ordem
-
-  puts("");
 }
 
 int main()
 {
   FILE *entrada;
   int numero;
+  btree *huff;
+  hash *dicionario;
   char arq[500]; // variavel para guardar o nome ou diretorio do arquivo (ex: arquivo.txt)
   printf("\n Insira o nome.tipo do arquivo para que seja montada sua Arvore de Huffman:\n\n ");
 
@@ -308,7 +393,7 @@ int main()
 
   puts("");
   entrada = fopen(arq, "rb"); // fopen "chama" o arquivo, fopen("arquivo.tipo", "forma") forma- r,w,a (rb, wb, ab) binario
-  //                                                  (r+, w+, a+) criacao                          
+  //                                                  (r+, w+, a+) criacao
   if(entrada == NULL) // verifica se o arquivo eh valido
   {
     printf("\nO arquivo digitado nao existe ou nao foi encontrado.\n");
@@ -320,7 +405,18 @@ int main()
 
   unsigned freq[257] = {0}; // array que guarda as frequencias dos caracteres
 
-    Huffman(entrada,freq); // criar a arvore de huffman pelo arquivo inserido
+  huff = Huffman(entrada,freq); // criar a arvore de huffman pelo arquivo inserido
 
-    return 0;
+  hash *dicionary = create_dicionary(); // criar o dicionario
+  char binary[100] = {0}; // array para salvar o binario de cada caracter
+  int i = 0;
+
+  Hash(dicionary, huff, binary, &i); // funcao que adiciona os binarios de cada caracter da arvore de huffman
+
+  printf("\n Dicionario (ordem de acordo com a tabela ascii):\n ");
+  puts("");
+  print_dicionary(dicionary); // printa o dicionario pela ordem da tabela ascii
+  puts("");
+
+  return 0;
 }
