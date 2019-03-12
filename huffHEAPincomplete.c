@@ -157,7 +157,7 @@ void enqueue(heap *hp, btree *tree)
     hp->data[hp->size] = tree;
     int key_index = hp->size;
     int parent_index = get_parent_index(hp, hp->size);
-    while (parent_index >= 1 && hp->data[key_index]->frequence <= hp->data[parent_index]->frequence)
+    while (parent_index >= 1 && hp->data[key_index]->frequence < hp->data[parent_index]->frequence)
     {
       swap(hp->data[key_index], hp->data[parent_index]); //// ****************************
       key_index = parent_index;
