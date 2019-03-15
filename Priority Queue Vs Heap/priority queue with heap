@@ -3,16 +3,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <limits.h>
-//tava com um problema no 5
-//tive que usar "." pq nao tava funcionando o "->",acredito eu que funcionem do "mesmo" jeito
-//ainda falta implementar o heapsearch e search na priority queue com lista,mas acho que vai ser facil, já já olho 
-//(15/03/2019 as 19:36) 
+//testem esse code pra ver se ele ta contando certa as iteracoes, testei aqui e tava certo,preciso da opinião de vocês
 typedef struct heap qheap;
 typedef struct item_of_queue item;
 
 qheap *create_qheap(int capacity);
 
-void enqueue(qheap * hp, int value, int priority);
+void enqueue(qheap * hp, int value, int priority,int chosen);
 
 int parent_index(qheap *hp, int value);
 int left_index(qheap *hp, int value);
@@ -21,7 +18,7 @@ void swap(item *a, item *b);
 bool is_qheap_empty(qheap *hp);
 
 void max_qheapify(qheap *hp, int i);
-//void qheapsearch(qheap *hp,num);
+void qheapsearch(qheap *hp,int num);
 
 int dequeue(qheap *hp);
 //void destroy(heap *hp);
@@ -31,17 +28,17 @@ int main()
   int size_; scanf("%d", &size_);
   qheap *new_qheap = create_qheap(size_);
 
-  int chosen,i; //scanf("%d", &chosen);
+  int chosen,i; scanf("%d", &chosen);
   for (i = 1; i <= size_; i++)
   {
-    enqueue(new_qheap,i,i);
+    enqueue(new_qheap,i,i,chosen);
   }//printf("%d", new_qheap->comparations);
   for (i = 1; i <= size_; i++)
   {
     printf("|%d|", dequeue(new_qheap));
   }
 
-  //heapsearch(new_heap,chosen);
+  //heapsearch(new_heap,chosen,1);
 
   return 0;
 }
@@ -71,8 +68,9 @@ qheap *create_qheap(int capacity)
   return curr;
 }
 
-void enqueue(qheap *hp, int value, int priority)
+void enqueue(qheap *hp, int value, int priority,int chosen)
 {
+  hp->comparations = 0;
 	hp->data[++hp->size].priority = priority;
     hp->data[hp->size].value= value;
     int key_index = hp->size;
@@ -92,6 +90,10 @@ void enqueue(qheap *hp, int value, int priority)
       key_index = parentindex;
       parentindex = parent_index(hp,key_index);
     }
+    }
+    if (chosen == value)
+    {
+      printf("Numero de iteracoes: %d\n", hp->comparations);
     }
 }
 
