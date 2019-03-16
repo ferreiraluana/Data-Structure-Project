@@ -16,9 +16,8 @@
 /////////////////////////////////
 */
 
-// ATENCAO PARECE QUE NAO ESTA FUNCIONANDO QUANDO O TEXTO CONTEM CARACTERES COM ACENTUACAO E DERIVADOS
-// CONFIRMADO NAO ESTA FUNCIONANDO PARA CARACTERES MAIORES QUE 127 NA TABELA ASCII
-// troquei todos os o ints por long long int e todos os chars para byte (unsigned char) parece ter resolvido alguns casos
+// SEGMENTATION FAULT FOI PRO BELELEU
+// NAO TA COMPACTANDO MT COISA ):
 
 typedef struct btree btree; //Binary Tree
 typedef unsigned char byte; //Byte = 8 bits = [0|0|0|0|0|0|0|0] = que a gente usa para add o char na arvore
@@ -95,7 +94,7 @@ FILE *construct_file(FILE *input, hash *dicionary, byte *pre_order, byte *bits, 
 hash* create_dicionary()
 {
   hash *new_hash = (hash*) malloc(sizeof(hash));
-  long long int i;
+  int i;
   for (i = 0; i < 256; i++)
   {
     new_hash->table[i] = NULL;
@@ -107,7 +106,7 @@ heap* create_heap()
 {
   heap *new_heap = (heap*) malloc(sizeof(heap));
   new_heap->size = 0;
-  long long int i;
+  int i;
   for(i=1;i<=256;i++)
   {
     new_heap->data[i] = NULL;
@@ -130,8 +129,7 @@ btree* create_btree(byte c, long long int freq, btree *left, btree *right)
 
 btree *building_huff_tree(heap *hp, long long int t)
 {
-  if(hp->size == 1)
-    return hp->data[1];
+  if(hp->size == 1) return hp->data[1];
 
   btree *left = dequeue(hp); // retira o primeiro elemento da heap
   //                que no caso eh o menor
@@ -162,7 +160,8 @@ btree *building_huff_tree(heap *hp, long long int t)
 
 btree* create_huffman_tree(unsigned *freq)
 {
-  long long int i,t = 0;
+  unsigned i;
+  long long int t = 0;
   btree *aux;
   heap *hp = create_heap();
   btree *huff= NULL;
@@ -211,7 +210,7 @@ btree* Huffman(FILE *input, unsigned *freq, unsigned *tam)
 
   frequencia(input,freq); //funcao para abyte a frequencia
 
-  long long int i;
+  int i;
   puts("");
   printf(" Prlong long int do array inicial\n Caracteres e suas respectivas frequencias:\n\n");
   for(i = 0 ;i < 256; i++ )// printa os caracteres e suas frequencias do arquivo
@@ -231,7 +230,7 @@ btree* Huffman(FILE *input, unsigned *freq, unsigned *tam)
   print_pre(huff, tam);//printa em pre ordem e encontra o tamanho da arvore
 
   puts("");
-  printf("\n Tamanho da arvore: %lld\n",tam[0]);
+  printf("\n Tamanho da arvore: %d\n",tam[0]);
   return huff;
 }
 
@@ -318,11 +317,18 @@ void swap(btree *a, btree *b)
 void frequencia(FILE *input, unsigned *freq)
 {
   byte c;
-  while(fread(&c,1,1,input)) // le o arquivo ate o final
+  /*while(fread(&c,1,1,input)) // le o arquivo ate o final
   {
     freq[c]+=1; // c representa o caracter em ascii e usamos ele como indice da posicao ao qual
     //         a frequencia sera somada
-  }
+  }*/
+
+  while(fscanf(input, "%c", &c) != EOF)
+    {
+        if(c != NULL) {
+            freq[c] += 1;
+        }
+    }
 
   rewind(input); // volta o arquivo ao seu comeco
 }
@@ -342,7 +348,6 @@ byte* add_l(byte *binary, long long int *i)
 {
     binary[i[0]] = '0';
     i[0]++;
-
     return binary;
 }
 
@@ -350,7 +355,6 @@ byte* add_r(byte *binary, long long int *i)
 {
     binary[i[0]] = '1';
     i[0]++;
-
     return binary;
 }
 
@@ -383,7 +387,7 @@ void Hash(hash *hs, btree *arv, byte *binary, long long int *i)
 
 void print_dicionary(hash *hs)
 {
-  for(long long int i = 0;i < 256;i++)
+  for(int i = 1;i <= 255;i++)
   {
     if(hs->table[i] != NULL)
     {
@@ -397,16 +401,13 @@ byte set_bit(byte c, long long int i)
 {
   /*
     Essa funcao eh usada para setar um bit 0 em 1, por exemplo:
-
     O byte 00110010
-
     Quero setar a ultima posicao dele como 1
     Entao eu dou i = 0
     Mask = 1 << (7 - 0) = 1 << 7
     Mask vai vir disso -> 00000001 para isso -> 10000000
     E vai fazer o 'ou' bit-a-bit com o byte que vc mandou para setar
     Vai ser:
-
     00110010
     Ou
     10000000
@@ -434,7 +435,7 @@ two_bytes make_header(byte *bits)
       e associa cada '1' da string ao respectivo bit no short de 2 bytes
       PS: a string deve ser do mesmo tamanho do short // 16 bits // 16 caracteres // string[16]
   */
-  long long int i;
+  int i;
   two_bytes header = 0;
   two_bytes mask;
   for(i = 0;i < 16; i++)
@@ -482,16 +483,13 @@ byte *make_pre_order(btree *huff, long long int *cont, byte *pre_order)
   /*
       Essa funcao usa a arvore de huffman para fazer a string com os caracteres da pre ordem
       que irei usar para por no cabecalho do arquivo
-
       Ela tambem considera o caso de que uma folha pode ser '*' ou '\'
       que eh necessaria para usar o caracter de escape
-
       Por exemplo se a arvore tier um noh folha com o caracter '*'
       entao sera inserido na string um caracter de escape '\' que servira
       para indicar que o proximo caracter eh uma folha
       assim ficando com:
       Ex: **ABCD\*     <- esse \* indica que * eh uma folha.
-
       Isso sera necessario para montar a arvore na descompressao
   */
 
@@ -524,7 +522,6 @@ FILE *construct_file(FILE *input, hash *dicionary, byte *pre_order, byte *bits, 
       pegando caracter por caracter e utilizando a string da posicao dele na hash para setar os bits do byte
       onde ele sera armazenado. Ao mesmo tempo verificando se o byte foi totalmente preenchido
       verifiquei nesse if(i==8) [soh escrevemos o byte no arquivo quando ele estiver cheio]
-
       Se ao final desse processo o i for maior que 0, indica que sobrou bit no ultimo byte
       usei o i para saber quantos bits sobraram, subtraindo ele de 8
       *recomendo nao tentarem entender as maracutaias e atribuicoes que faco*
@@ -534,7 +531,7 @@ FILE *construct_file(FILE *input, hash *dicionary, byte *pre_order, byte *bits, 
       retornamos esse arquivo pra main;
   */
 
-  FILE *output = fopen("output.txt","wb");
+  FILE *output = fopen("output.txt","wb");//ATE AQUI
   byte item;
   long long int p, k;
   long long int i = 0; // usarei para saber onde setar o bit e quando escrevelo no arquivo output
@@ -542,8 +539,11 @@ FILE *construct_file(FILE *input, hash *dicionary, byte *pre_order, byte *bits, 
   two_bytes header; // parte binaria do cabecalho (2 bytes)
   fwrite(&header, 2, 1, output); // escreve um unsigned short (2 bytes) para armazenar o num de lixo e o tam da arvore depois
   fwrite(pre_order, size, 1, output); // escreve a pre-ordem da arvore
-  while(fread(&item, 1, 1, input) >= 1)
+
+  while(fscanf(input, "%c", &item) != EOF)
+  //while(fread(&item, 1, 1, input) >= 1)
   {
+    if(item != NULL){
     p = strlen(dicionary->table[item]->binary);
     for(k = 0 ; k < p ; k++ )
     {
@@ -564,6 +564,7 @@ FILE *construct_file(FILE *input, hash *dicionary, byte *pre_order, byte *bits, 
         i = 0;
       }
     }
+    }
   }
   if( i > 0 ) // sobrou lixo no byte
   {
@@ -576,7 +577,7 @@ FILE *construct_file(FILE *input, hash *dicionary, byte *pre_order, byte *bits, 
   bits[16] = NULL; // gambiarra
   printf(" ");
   puts(bits);
-  printf("\n Tamanho dos 2 bytes:\n %lld\n",strlen(bits));
+  printf("\n Tamanho dos 2 bytes:\n %d\n",strlen(bits));
   puts("");
 
   rewind(input); // volta o arquivo de input para o comeco (por precaucao)
@@ -592,7 +593,7 @@ FILE *construct_file(FILE *input, hash *dicionary, byte *pre_order, byte *bits, 
   fwrite(&header, 2, 1, output); // atualizando o cabecalho
   puts("");
   return output;
-}
+  }
 
 int main()
 {
@@ -601,7 +602,7 @@ int main()
   FILE *output;
   btree *huff;
   hash *dicionary;
-  byte arq[500]; // variavel para guardar o nome ou diretorio do arquivo (ex: arquivo.txt)
+  byte arq[100]; // variavel para guardar o nome ou diretorio do arquivo (ex: arquivo.txt)
   printf("\n Insira o nome.tipo do arquivo para executar uma acao:\n\n ");
 
   scanf("%s",arq); //Ex: C:\Users\USER_NAME\Documents\CAPCOM\aloha.txt
@@ -635,7 +636,7 @@ int main()
     huff = Huffman(input,freq,&tam); // criar a arvore de huffman pelo arquivo inserido
 
     dicionary = create_dicionary(); // criar o dicionario
-    byte binary[999999] = {0}; // array para salvar o binario de cada caracter
+    byte binary[9999] = {0}; // array para salvar o binario de cada caracter
     long long int i = 0;
 
     Hash(dicionary, huff, binary, &i); // funcao que adiciona os binarios de cada caracter do dicionario da arvore de huffman
@@ -664,7 +665,7 @@ int main()
   {
     //descompactar
     // em breve
-    
+
   }
 
   fclose(input);
