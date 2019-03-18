@@ -16,8 +16,19 @@
 /////////////////////////////////
 */
 
-// SEGMENTATION FAULT FOI PRO BELELEU
-// NAO TA COMPACTANDO MT COISA ):
+
+/*
+FUI COMPILAR NO TERMINAL NO LINUX E RECEBI VARIOS WARNINGS.
+SEGUNDO O GCC, HA VARIAS COMPARAÇOES ENTRE INTEIROS E PONTEIROS.
+EU JA ESTOU CONVENCIDA DE QUE EXISTE O CARACTERE "NULL", O QUE 
+NAO FAZ SENTIDO EH QUE, NESSE CASO, O NULL REALMENTE SE REFERE 
+A UM PONTEIRO, E ESTA SENDO ATRIBUIDO A INTEIROS.
+
+NAO SEI SE VCS ENTENDERAM, EU ESTOU COM MUITO SONO, MAS EH ISSO.
+TALVEZ ISSO DE RUIM NA HORA DA DESCOMPACTAÇAO.
+OU NAO...
+
+*/
 
 typedef struct btree btree; //Binary Tree
 typedef unsigned char byte; //Byte = 8 bits = [0|0|0|0|0|0|0|0] = que a gente usa para add o char na arvore
@@ -72,7 +83,7 @@ long long int left_index_(heap *hp,long long int i); // funcao complementar da h
 long long int right_index_(heap *hp,long long int i); // funcao complementar da heapsort()
 void swap(btree *a, btree *b); // troca duas arvores na heap
 void frequencia(FILE *input, unsigned *freq); // elabora o array de frequencia cujo indices sao seus respectivos caracteres
-void int_pre(btree *tree, unsigned *tam); // imprime a arvore de huffman em pre-ordem e soma o numero de nodes
+void print_pre(btree *tree, unsigned *tam); // imprime a arvore de huffman em pre-ordem e soma o numero de nodes
 byte* add_l(byte *binary, long long int *i); // funcao complementar da Hash()
 byte* add_r(byte *binary, long long int *i); // funcao complementar da Hash()
 void put(hash *hs, byte indice, byte *binary); // adiciona o binario do caracter no dicionario
@@ -217,7 +228,7 @@ btree* Huffman(FILE *input, unsigned *freq, unsigned *tam)
   {
     if(freq[i] != 0)
     {
-      printf(" %c %lld\n", i, freq[i]);
+      printf(" %c %u\n", i, freq[i]);
     }
   }
 
@@ -577,7 +588,7 @@ FILE *construct_file(FILE *input, hash *dicionary, byte *pre_order, byte *bits, 
   bits[16] = NULL; // gambiarra
   printf(" ");
   puts(bits);
-  printf("\n Tamanho dos 2 bytes:\n %d\n",strlen(bits));
+  printf("\n Tamanho dos 2 bytes:\n %lu\n",strlen(bits));
   puts("");
 
   rewind(input); // volta o arquivo de input para o comeco (por precaucao)
