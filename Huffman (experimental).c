@@ -16,12 +16,11 @@
 /////////////////////////////////
 */
 
-// SEGMENTATION FAULT FOI PRO BELELEU
-// NAO TA COMPACTANDO MT COISA ):
+// Estah compactando somente arquivos de texto por enquanto
 
 typedef struct btree btree; //Binary Tree
 typedef unsigned char byte; //Byte = 8 bits = [0|0|0|0|0|0|0|0] = que a gente usa para add o char na arvore
-typedef short two_bytes; // 2 Bytes = 16 bits = [0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0] = usar no cabecalho
+typedef short two_bytes; // 2 Bytes = 16 bits = [0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0] = usar no cabecalho // NAO VAMOS USAR MAIS (VAMOS USAR 2 UNSIGNED CHAR PRA ISSO)
 typedef struct heap heap; // Heap
 typedef struct hash_table hash; // dictionary
 typedef struct element element; // dictionary Item
@@ -83,6 +82,10 @@ void make_header(byte *bits, byte one[0], byte two[0]); // monta os 2 bytes do c
 byte *Dec_to_binary(long long int n, byte *binary, long long int size); // transforma um inteiro em binario e coloca esse binario em uma string
 byte *make_pre_order(btree *huff, long long int *cont, byte *pre_order); // monta a pre-ordem da arvore considerando se a folha eh '*' ou '\'
 FILE *construct_file(FILE *input, hash *dictionary, byte *pre_order, byte *bits, long long int size, byte c); // constroi o arquivo comprimido (COM CABECALHO)
+int is_bit_i_set(byte c, long long int i); // verifica se o bit da posicao i estah setado
+btree *tree_from_pre_order(btree *huff, byte *pre_order, int *cont, int size); // monta a arvore pela pre-ordem dada no arquivo
+FILE *construct_file_decompress(FILE *input, btree *huff,int bytes_percorridos, int trash); // funcao para construir o arquivo descompactado usando a arvore
+FILE *Decompress(FILE *input, btree *huff); // funcao base para a descompressao e leitura do cabecalho
 
 ///////////////////////////////////////////////
 ///////////////////////////////////
@@ -207,16 +210,16 @@ btree* create_huffman_tree(unsigned *freq)
   {
     byte c;
 
-  frequencia(input,freq); //funcao para abyte a frequencia
+  frequencia(input,freq); //funcao para achar a frequencia
 
   int i;
   puts("");
-  printf(" Prlong long int do array inicial\n Caracteres e suas respectivas frequencias:\n\n");
+  printf(" Print do array inicial\n Caracteres e suas respectivas frequencias:\n\n");
   for(i = 0 ;i < 256; i++ )// printa os caracteres e suas frequencias do arquivo
   {
     if(freq[i] != 0)
     {
-      printf(" %c %lld\n", i, freq[i]);
+      printf(" %c %d\n", i, freq[i]);
     }
   }
 
@@ -316,12 +319,6 @@ void swap(btree *a, btree *b)
 void frequencia(FILE *input, unsigned *freq)
 {
   byte c;
-  /*while(fread(&c,1,1,input)) // le o arquivo ate o final
-  {
-    freq[c]+=1; // c representa o caracter em ascii e usamos ele como indice da posicao ao qual
-    //         a frequencia sera somada
-  }*/
-
   while(fscanf(input, "%c", &c) != EOF)
   {
     if(c != NULL) 
@@ -498,7 +495,7 @@ byte *make_pre_order(btree *huff, long long int *cont, byte *pre_order)
 
   if(huff != NULL)
   {
-    if(huff->left == NULL && huff->right == NULL && huff->c == '*' || huff->c == '\\')
+    if(huff->left == NULL && huff->right == NULL && (huff->c == '*' || huff->c == '\\'))
     {
       pre_order[cont[0]] = '\\';
       cont[0]++;
@@ -514,7 +511,7 @@ byte *make_pre_order(btree *huff, long long int *cont, byte *pre_order)
 FILE *construct_file(FILE *input, hash *dictionary, byte *pre_order, byte *bits, long long int size, byte c)
 {
   /*
-      deu ateh uma preguica explicar essa daqui ate porque olha o tanto de informacoes que tem por aqui
+      deu ateh uma preguica explicar essa daqui ate porque olha o tanto de informacoes que tem por aqui,
       bom, primeiramente
       Eh criado um arquivo chamado output.txt (temporario favor mudar para .huff depois)
       que serah nosso arquivo comprimido
@@ -541,7 +538,7 @@ FILE *construct_file(FILE *input, hash *dictionary, byte *pre_order, byte *bits,
   long long int trash;
   two_bytes header; // parte binaria do cabecalho (2 bytes)
   fwrite(&header, 2, 1, output); // escreve um unsigned short (2 bytes) para armazenar o num de lixo e o tam da arvore depois
-  fwrite(pre_order, size, 1, output); // escreve a pre-ordem da arvore
+  fwrite(pre_order, strlen(pre_order), 1, output); // escreve a pre-ordem da arvore
 
   while(fscanf(input, "%c", &item) != EOF)
   {
@@ -644,76 +641,63 @@ btree *tree_from_pre_order(btree *huff, byte *pre_order, int *cont, int size)
   return huff;
 }
 
-FILE *construct_file_decompress(FILE *input, btree *huff,int bytes_percorridos, int trash)
+FILE *construct_file_decompress(FILE *input, btree *huff,int tam_cabecalho, int trash)
 {
   FILE *output = fopen("descompressed.txt","wb");
   btree *aux = huff;
-  int i;
+  int i,cont = 0;
   byte c;
-  byte last_byte;
+  byte byte_with_trash;
+  long int last_byte;
   fseek(input, -1, SEEK_END);
-  fread(&last_byte, 1,1,input);
-  printf("\nbyte com o lixo: %d\n\n",last_byte);
-  fseek(input, bytes_percorridos, SEEK_SET);
+  last_byte = ftell(input);
+  fread(&byte_with_trash, 1,1,input);
+  printf("\n posicao do byte com o lixo no arquivo: %ld\n byte com o lixo: %d\n\n",last_byte, byte_with_trash);
+  fseek(input, tam_cabecalho , SEEK_SET);
+  cont = tam_cabecalho;
   while(fread(&c, 1, 1, input))
   {
-    if(c != last_byte)
-    {
-      for(i = 7;i >= 0;i--)
-      {
-        if(is_bit_i_set(c, i))
-        {
-          //printf("%d\n",aux->c);
-          if(aux->right == NULL)
-          {
-            //puts("ih rapaiz");
-          }
-          aux = aux->right;
-        }
-        else
-        {
-          //puts("entrou esquerda");
-          aux = aux->left;
-        }
-        //puts("aloha");
-        //if(aux != NULL)
-        //
-          if(aux->left == NULL && aux->right == NULL)
-          {
-            //printf("%d\n",aux->c);
-            fwrite(&aux->c, 1, 1, output);
-            aux = huff;
-          }
-        //}
-      }
-    }
-    else
+    if(cont == last_byte)
     {
       for(i = 7; i >= trash;i--)
       {
         if(is_bit_i_set(c,i))
         {
-          //puts("entrou direita");
           aux = aux->right;
         }
         else
         {
-          //puts("entrou esquerda");
           aux = aux->left;
         }
-        //if(aux != NULL)
-        //{
-          if(aux->left == NULL && aux->right == NULL)
-          {
-            //printf("%d\n",aux->c);
-            fwrite(&aux->c, 1, 1, output);
-            aux = huff;
-          }
-        //}
-      }    
+        if(aux->left == NULL && aux->right == NULL)
+        {
+          fwrite(&aux->c, 1, 1, output);
+          aux = huff;
+        }
+      } 
     }
+    else
+    {
+      for(i = 7;i >= 0;i--)
+      {
+        if(is_bit_i_set(c, i))
+        {
+          aux = aux->right;
+        }
+        else
+        {
+          aux = aux->left;
+
+        }
+        if(aux->left == NULL && aux->right == NULL)
+        {
+          fwrite(&aux->c, 1, 1, output);
+          aux = huff;
+        }
+      }   
+    }    
+    cont++;
   }
-  //printf("\n%d\n",c);
   return output;
 }
 
@@ -762,12 +746,13 @@ FILE *Decompress(FILE *input, btree *huff)
     }
   }
   cont = 0;
-  aux = tree_size;
+  aux = tree_size - 2;
   while(aux)
   {
     fscanf(input,"%c",&c);
     if(c == '\\')
     {
+      file_start++; // contando as barras..
       pre_order[cont] = c;
       cont++;
       fscanf(input,"%c",&c);
@@ -781,16 +766,19 @@ FILE *Decompress(FILE *input, btree *huff)
     file_start++;
   }
   cont = 0;
-  printf("\n ");
+  printf("\n Array do pre_order:\n ");
   puts(pre_order);
+  file_start = strlen(pre_order) + 2;
   printf(" tree %d  trash %d bytes %d\n\n ",tree_size, trash, file_start);
   huff = tree_from_pre_order(huff, pre_order, &cont, tree_size);
   unsigned tam = 0; // soh pra funcao print funcionar
   puts("");
+  printf("\n Arvore de Huffman do arquivo:\n\n ");
   print_pre(huff,&tam);
+  puts("");
   output = construct_file_decompress(input, huff, file_start, trash);
   free(huff);
-  printf("\n\n DEUS EH CONOSCO IRMOES!!\n\n");
+  printf("\n\n\t DEUS EH CONOSCO IRMOES!!\n\n\n\n\t Arquivo Descompactado!!!\n\n ");
   return output;
 }
 
@@ -814,7 +802,7 @@ int main()
     printf("\n O arquivo digitado nao existe ou nao foi encontrado.\n");
     exit(1); // retornar 1 indica que o arquivo e invalido
   }
-  printf(" compactar // em breve...\n\n ");
+  printf(" [ compactar // descompactar ]\n\n ");
   printf("Insira o modo:\n\n ");
   byte caminho[20]; // variavel que salva a escolha
 
@@ -844,6 +832,8 @@ int main()
     byte pre_order[99999] = {0};
     long long int cont = 0;
     strcpy(pre_order, make_pre_order(huff, &cont, pre_order));
+    //puts(pre_order);
+    //tam = strlen(pre_order);
 
     byte header[16]; // binario do cabecalho
     strcpy(header, Dec_to_binary(tam, header, 16));
@@ -859,8 +849,6 @@ int main()
     output = Decompress(input, huff);
     fclose(output);
     free(huff);
-    //descompactar
-    // em breve
   }
   else
   {
