@@ -3,7 +3,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <time.h>
 
+#define MAX 100000
 typedef struct heap qheap;
 typedef struct item_of_queue item;
 
@@ -34,11 +36,11 @@ struct item_of_queue
 
 qheap *create_qheap(int capacity)
 {
-  qheap *curr = (qheap*)malloc(1*sizeof(qheap));
-  curr->capacity = capacity;
-  curr->size = 0;
-  curr->data = (item*)malloc((capacity) * sizeof(item));
-  return curr;
+  qheap *current = (qheap*)malloc(1*sizeof(qheap));
+  current->capacity = capacity;
+  current->size = 0;
+  current->data = (item*)malloc((capacity + 1) * sizeof(item));
+  return current;
 }
 
 bool is_qheap_empty(qheap *hp){return (!hp->size);}
@@ -81,13 +83,13 @@ void max_qheapify(qheap *hp, int i)
   int leftindex = left_index(hp,i);
   int rightindex = right_index(hp,i);
 
-  if (leftindex <= hp->size && hp->data[leftindex].priority < hp->data[i].priority)
+  if (leftindex <= hp->size && hp->data[leftindex].priority > hp->data[i].priority)
   {
     largest = leftindex;
   }
   else{largest = i;}
 
-  if (rightindex <= hp->size && hp->data[rightindex].priority < hp->data[largest].priority)
+  if (rightindex <= hp->size && hp->data[rightindex].priority > hp->data[largest].priority)
   {
     largest = rightindex;
   }
@@ -109,42 +111,21 @@ int dequeue(qheap *hp)
   return num;
 }
 
-void build_max_heap(qheap *heap)
-{
-  int i;
-  for(i = (heap->size)/2; i >= 1; i--)
-    max_qheapify(heap, i);
-}
-
-void heapsort(qheap *heap)
-{
-  build_max_heap(heap);
-  int i;
-  for(i = heap->size; i >=1; i--)
-  {
-    swap(&heap->data[1], &heap->data[i]);
-    heap->size--;
-    max_qheapify(heap, 1);
-    //print(heap);
-  }
-}
-
 void heapsearch(qheap *hp, int start, int end, int chosen, int *comparisons)
 {
   *comparisons +=1;
   if(end >= 1)
   {
-    //*comparisons += 1;
     int middle = (start + end)/2;
     if(hp->data[middle].priority == chosen) 
     {
-      return ;
+      return;
     }
-    if(hp->data[middle].priority > chosen) 
+    else if(hp->data[middle].priority > chosen) 
     {
       heapsearch(hp, start, middle-1, chosen, comparisons);
     }
-    if(hp->data[middle].priority < chosen) 
+    else if(hp->data[middle].priority < chosen) 
     {
       heapsearch(hp, middle + 1, end, chosen, comparisons);
     }
@@ -161,29 +142,33 @@ void main()
   int size; printf("TYPE THE HEAP MAXIMUM SIZE:\n");
   scanf("%d", &size); printf("\n");
   qheap *heap = create_qheap(size); // size + 1
-  int i = 1, j, k, chosen, comparisons = 0;
-
+  int i, j, k, chosen, comparisons = 1, size1;
+  int item, preference;
+  srand(time(NULL));
+  size1 = size;
   while(size--)
   {
-    enqueue(heap, i, i); i++;
-    build_max_heap(heap);
+    item = rand() % MAX;
+    preference = item;
+    //preference = rand() % MAX;
+    enqueue(heap, item, preference); 
   }
-  heapsort(heap);
-  heap->size = i-1;
+  printf("HOW MANY NUMBERS DO YOU WANNA FIND?\n");
+  scanf("%d", &i); printf("\n");
+  printf("ENTER THE NUMBERS TO BE FOUND:\n");
 
-  printf("ENTER %d NUMBERS:\n", i-1);
-
-  for(k = 1; k < i; k++)
+  for(k = 1; k <= i; k++)
   {
-    //scanf("%d", &chosen);
-    printf("it = %d prio = %d\n", heap->data[k].value, heap->data[k].priority);
-   // printf("%d comparisons\n", comparisons);
-    //comparisons = 0;
-  }
-
-  printf("\n");
-  for (j = 1; j < i; j++)
+    scanf("%d", &chosen);
+    heapsearch(heap, 1, size, chosen, &comparisons);
+    printf("%d,%d\n", chosen, comparisons);
+    //printf("|%d|->%d\n", heap->data[k].value, heap->data[k].priority);
+    comparisons = 0;
+  }printf("\n");
+  
+  for (j = 1; j < size1; j++)
   {
     printf("|%d|", dequeue(heap));
   } printf("\n");
+  free(heap);
 }
