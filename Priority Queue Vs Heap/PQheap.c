@@ -29,15 +29,6 @@ qheap *create_qheap(qheap *heap, long long int capacity)
   curr->size = 0;
   curr->data = (item_of_queue*)malloc((capacity + 1) * sizeof(item_of_queue));
   return curr;
-///////////////////////////////////////
-
-  // heap = (qheap*) malloc(sizeof(qheap));
-  // heap->capacity = capacity;
-  // heap->size = 0;
-  // heap->comparations = 0;
-  // heap->data = (item_of_queue*) realloc((capacity+1) * sizeof(item_of_queue));
-
-  //return heap;
 
 }
 
@@ -52,7 +43,7 @@ void swap(item_of_queue *a, item_of_queue *b)
   *b = aux;
 }
 
-void enqueue(qheap *hp, int value, int size_, int find)
+int enqueue(qheap *hp, int value, int size_, int find)
 {
     hp->comp = 0;
     hp->size++;
@@ -77,6 +68,8 @@ void enqueue(qheap *hp, int value, int size_, int find)
 
     if(find == value)
       printf("Number of iterations: %d\n", hp->comp);
+
+    return (hp->comp);
 }
 
 bool is_qheap_empty(qheap *hp){ return (!hp->size);}
@@ -106,11 +99,17 @@ void max_qheapify(qheap *hp, int i, int *comp)
   }
 }
 
+FILE *plot1(FILE *f, int i, int iterat)
+{
+  f = fopen("plotFILE.csv", "a+");
+  fprintf(f, "%d,%d\n", i,iterat);
+  return f;
+}
+
 int main()
 {
-  int size_,num;
+  int size_,num,quantity;
   FILE *plot;
-
 
   printf("Pick a size for your heap: \n");
   scanf("%d", &size_);
@@ -124,8 +123,10 @@ int main()
   for (i = 1; i <= size_; i++)
   {
     num = rand();
-    enqueue(new_qheap,num,size_,chosen);
+    quantity = enqueue(new_qheap, num, size_, chosen);
+    plot = plot1(plot,i, quantity);
   }
+  fclose(plot);
 
   return 0;
 }
