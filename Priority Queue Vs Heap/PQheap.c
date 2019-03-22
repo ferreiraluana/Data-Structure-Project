@@ -11,6 +11,7 @@ typedef struct item_of_queue item_of_queue;
 struct item_of_queue
 {
   long long int value;
+  long long int comp;
 };
 
 struct qheap
@@ -18,6 +19,7 @@ struct qheap
   item_of_queue *data;
   int capacity;
   int size;
+  int comp;
 };
 
 qheap *create_qheap(qheap *heap, long long int capacity)
@@ -50,14 +52,14 @@ void swap(item_of_queue *a, item_of_queue *b)
   *b = aux;
 }
 
-void enqueue(qheap *hp, int value, int size_, int *comp)
+void enqueue(qheap *hp, int value, int size_, int find)
 {
-    *comp+=1;
+    hp->comp = 0;
     hp->size++;
     hp->data[hp->size].value= value;
     int key_index = hp->size;
     int parentindex = parent_index(hp,hp->size);
-
+    hp->comp +=1;
     if (hp->size > size_)
     {
       printf("Heap Overflow\n");
@@ -66,12 +68,15 @@ void enqueue(qheap *hp, int value, int size_, int *comp)
     {
       while (parentindex >= 1 && hp->data[key_index].value > hp->data[parentindex].value)
       {
-        *comp+=1;
+        hp->comp +=1;
         swap(&hp->data[key_index],&hp->data[parentindex]); ////////////////tinha &
         key_index = parentindex;
         parentindex = parent_index(hp,key_index);
       }
     }
+
+    if(find == value)
+      printf("Number of iterations: %d\n", hp->comp);
 }
 
 bool is_qheap_empty(qheap *hp){ return (!hp->size);}
@@ -103,26 +108,24 @@ void max_qheapify(qheap *hp, int i, int *comp)
 
 int main()
 {
-  int size_, comparison = 0,num;
+  int size_,num;
+  FILE *plot;
+
+
   printf("Pick a size for your heap: \n");
   scanf("%d", &size_);
   qheap *new_qheap = create_qheap(new_qheap, size_);
 
   int i, chosen;
+  printf("WHAT NUMBER ARE YOU LOOKING FOR?\n");
+  scanf("%d", &chosen);
+
   srand(time(NULL));
   for (i = 1; i <= size_; i++)
   {
     num = rand();
-    enqueue(new_qheap,num,size_,&comparison);
-    printf("enqueue of num === %d comparisons\n", i, comparison);
-    comparison = 0;
+    enqueue(new_qheap,num,size_,chosen);
   }
-
-  printf("Heap: \n");
-  for (i = 1; i <= size_; i++)
-  {
-    printf(" %d\n", new_qheap->data[i].value);
-  }printf("\n");
 
   return 0;
 }
