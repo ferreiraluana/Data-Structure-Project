@@ -99,10 +99,10 @@ void max_qheapify(qheap *hp, int i, int *comp)
   }
 }
 
-FILE *plot1(FILE *f, int i, int iterat)
+FILE *plot1(FILE *f, int item)
 {
   f = fopen("plotFILE.csv", "a+");
-  fprintf(f, "%d,%d\n", i,iterat);
+  fprintf(f, "%d", item);
   return f;
 }
 
@@ -124,7 +124,9 @@ int main()
   {
     num = rand();
     quantity = enqueue(new_qheap, num, size_, chosen);
-    plot = plot1(plot,i, quantity);
+    plot = plot1(plot,i);
+    plot = plot1(plot,quantity);
+    plot = plot1(plot,i); ///ajeitar p colocar \n
   }
   fclose(plot);
 
