@@ -30,7 +30,7 @@ int main()
   scanf("%lld", &size_);
   qheap *new_qheap = create_qheap(size_);
 
-  printf("Choose the number you want to search: \n");
+  printf("Choose a number to search: \n");
   int chosen,i; scanf("%d", &chosen);
   for (i = 1; i <= size_; i++)
   {
