@@ -3,6 +3,14 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
+#include <CUnit/Cunit.h>
+
+/*
+
+And finally, you must add the flag –lcunit to the gcc command (at the end):
+gcc  -o test test.c  -lcunit
+
+*/
 
 #define MAX_SIZE 257
 
