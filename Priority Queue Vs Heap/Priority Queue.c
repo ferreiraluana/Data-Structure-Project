@@ -33,8 +33,8 @@ int main(void)
 
   int j,chosen,cpriority,counter = 0;
     int num;
-    printf("Numero da busca: \n");
-    scanf("%d", &chosen);
+    //printf("Numero da busca: \n");
+    //scanf("%d", &chosen);
     for (i = 1; i <= runs; i++)
     {
       //num = rand();
@@ -47,8 +47,6 @@ int main(void)
   	scanf("%d", &op2);
   	printf("Insira a prioridade desse valor: ");
   	scanf("%d", &priority);
-
-
   	i++;
   }*/
 
@@ -135,8 +133,8 @@ p_q *enqueue(p_q *pq, int value, int priority)
   if (pq->size == pq->max_size)
   {
     FILE *output;
-    output = fopen("ame3.csv", "a");
-    fprintf(output, "%d, %d\n", pq->size, pq->comparisons);
+    output = fopen("AGORA_''VAI.csv", "a");
+    fprintf(output, "%d;%d\n", pq->size, pq->comparisons);
     fclose(output);
   }
   //current->comparisons++;
