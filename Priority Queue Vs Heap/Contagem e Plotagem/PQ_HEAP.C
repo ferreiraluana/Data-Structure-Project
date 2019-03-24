@@ -1,4 +1,4 @@
-/*PRIORITY QUEUE*/
+/*PRIORITY QUEUE WITH HEAP*/
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -6,126 +6,123 @@
 #include <limits.h>
 #include <time.h>
 
-typedef struct priority_queue p_q;
-typedef struct node list;
+typedef struct qheap qheap;
+typedef struct item_of_queue item_of_queue;
 
-p_q *create_priority_queue(int runs);
-list *create_node(int value, int priority);
-bool is_empty(p_q *pq);
-void print_priority_queue(p_q *pq);
-p_q *enqueue(p_q *pq, int value, int priority);
-void dequeue(p_q *pq);
-void destroy(p_q *pq);
-
-int main(void)
+struct item_of_queue
 {
-  int runs;
-  printf("Pick your queue size: ");
-  scanf("%d", &runs);
-  p_q *pq = create_priority_queue(runs);
-  printf("Creation: %s\n", is_empty(pq) == true ? "true" : false);
-  int priority,i = 0;
-  srand(time(NULL));
+  long long int value;
+  long long int comp;
+};
 
-    int j,chosen,cpriority,counter = 0;
-    int num;
-    for (i = 1; i <= runs; i++)
-    {
-      num = rand();
-      enqueue(pq,num,num);
-    }
-  print_priority_queue(pq);
-  destroy(pq);
-  return 0;
-}
-
-struct priority_queue
+struct qheap
 {
-  list *head;
-  int max_size;
-  int comparisons;
+  item_of_queue *data;
+  int capacity;
   int size;
+  int comp;
 };
 
-struct node
+qheap *create_qheap(qheap *heap, long long int capacity)
 {
-  int value;
-  int priority;
-  list *next;
-};
-
-p_q *create_priority_queue(int runs)
-{
-  p_q *current = (p_q*)malloc(1 * sizeof(p_q));
-  current->head = NULL;
-  current->comparisons = 0;
-  current->size = 0;
-  current->max_size = runs;
-  return (current);
+  qheap *curr = (qheap*)malloc(1*sizeof(qheap));
+  curr->capacity = capacity;
+  curr->size = 0;
+  curr->data = (item_of_queue*)malloc((capacity + 1) * sizeof(item_of_queue));
+  return curr;
 }
 
-bool is_empty(p_q *pq){return (pq->head == NULL);}
+int parent_index(qheap *hp, int i){return (i>>1);}
+int left_index(qheap *hp, int i){return (i<<1);}
+int right_index(qheap *hp, int i){return ((i<<1) + 1);}
 
-list *front(p_q *pq){return (pq->head);}
-
-int max(p_q *pq){return(pq->head->value);}
-
-
-p_q *enqueue(p_q *pq, int value, int priority)
+void swap(item_of_queue *a, item_of_queue *b)
 {
-  list *current = (list*)malloc(sizeof(list));
-  current->value = value;
-  current->priority = priority;
-  if (is_empty(pq) || current->priority > pq->head->priority)
-  {
-    if (!is_empty(pq)){pq->comparisons++;}
-    //current->comparisons++;
-    current->next = pq->head;
-    pq->head = current;
-  }
-  else
-  {
-    list *current_l  = pq->head;
-    while(current_l->next != NULL && current->priority < current_l->next->priority)
+  item_of_queue aux = *a;
+  *a = *b;
+  *b = aux;
+}
+
+int enqueue(qheap *hp, int value, int size_, int find)
+{
+    hp->comp = 0;
+    hp->size++;
+    hp->data[hp->size].value= value;
+    int key_index = hp->size;
+    int parentindex = parent_index(hp,hp->size);
+    hp->comp +=1;
+    if (hp->size > size_)
     {
-    	pq->comparisons++;
-      current_l = current_l->next;
+      printf("Heap Overflow\n");
     }
-    current->next = current_l->next;
-    current_l->next = current;
-  }
-  pq->size++;
-  if (pq->size != pq->max_size)
+    else
+    {
+      while (parentindex >= 1 && hp->data[key_index].value > hp->data[parentindex].value)
+      {
+        hp->comp +=1;
+        swap(&hp->data[key_index],&hp->data[parentindex]);
+        key_index = parentindex;
+        parentindex = parent_index(hp,key_index);
+      }
+    }
+    return (hp->comp);
+}
+
+bool is_qheap_empty(qheap *hp){ return (!hp->size);}
+
+void max_qheapify(qheap *hp, int i, int *comp)
+{
+  (*comp)+=1;
+  int largest;
+  int leftindex = left_index(hp,i);
+  int rightindex = right_index(hp,i);
+
+  if (leftindex <= hp->size && hp->data[leftindex].value > hp->data[i].value)
   {
-    FILE *output;
-    output = fopen("priority_queue.csv", "a");
-    fprintf(output, "%d,%d\n", pq->size, pq->comparisons);
-    fclose(output);
+    largest = leftindex;
   }
-  //current->comparisons++;
-  //return comparisons;
-}
+  else{largest = i;}
 
-void print_priority_queue(p_q *pq)
-{
-  list *current = pq->head;
-  while (current->next != NULL)
+  if (rightindex <= hp->size && hp->data[rightindex].value > hp->data[largest].value)
   {
-    printf("|%d|", current->value);
-    current = current->next;
-  } printf("|%d|\n", current->value);
+    largest = rightindex;
+  }
+
+  if (hp->data[i].value != hp->data[largest].value)
+  {
+    swap(&hp->data[i], &hp->data[largest]);
+    max_qheapify(hp,largest,comp); ///ver esse &(*comp)
+  }
 }
 
-void dequeue(p_q *pq)
+FILE *plot1(FILE *f, int i, int iterat)
 {
-  if (is_empty(pq)){return;}
-  list *current = pq->head;
-  pq->head = pq->head->next;
-  free(current);
+  f = fopen("plotFILE.csv", "a+"); /// era a+
+  //fprintf(f, "%d , %d\n", i,iterat);
+  fprintf(f, "%d;%d\n", i,iterat);
+
+  return f;
 }
 
-void destroy(p_q *pq)
+int main()
 {
-  while(!is_empty(pq)){dequeue(pq);}
-  free(pq);
+  int size_,num,quantity;
+  FILE *plot;
+
+  printf("Pick a size for your heap: \n");
+  scanf("%d", &size_);
+  qheap *new_qheap = create_qheap(new_qheap, size_);
+
+  int i, chosen;
+
+  srand(time(NULL));
+  for (i = 1; i <= size_; i++)
+  {
+    num = rand();
+    quantity = enqueue(new_qheap, num, size_, chosen);
+    plot = plot1(plot,i, quantity);
+  }
+  fclose(plot);
+
+  return 0;
 }
