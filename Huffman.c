@@ -3,14 +3,9 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
-#include <CUnit/Cunit.h>
+#include <CUnit/Basic.h>
 
-/*
-
-And finally, you must add the flag –lcunit to the gcc command (at the end):
-gcc  -o test test.c  -lcunit
-
-*/
+//gcc  -o huffman huffman.c -lm -lcunit
 
 #define MAX_SIZE 257
 
@@ -79,7 +74,7 @@ long long int left_index_(heap *hp,long long int i); // funcao complementar da h
 long long int right_index_(heap *hp,long long int i); // funcao complementar da heapsort()
 void swap(btree *a, btree *b); // troca duas arvores na heap
 void frequencia(FILE *input, unsigned *freq); // elabora o array de frequencia cujo indices sao seus respectivos caracteres
-void int_pre(btree *tree, unsigned *tam); // imprime a arvore de huffman em pre-ordem e soma o numero de nodes
+void print_pre(btree *tree, unsigned *tam); // imprime a arvore de huffman em pre-ordem e soma o numero de nodes
 byte* add_l(byte *binary, long long int *i); // funcao complementar da Hash()
 byte* add_r(byte *binary, long long int *i); // funcao complementar da Hash()
 void put(hash *hs, byte indice, byte *binary); // adiciona o binario do caracter no dicionario
@@ -626,7 +621,7 @@ FILE *construct_file(FILE *input, hash *dictionary, byte *pre_order, byte *bits,
   bits[16] = NULL; // gambiarra
   printf(" ");
   puts(bits);
-  printf("\n Tamanho dos 2 bytes:\n %d\n",strlen(bits));
+  printf("\n Tamanho dos 2 bytes:\n %ld\n",strlen(bits));
   puts("");
 
   rewind(input); // volta o arquivo de input para o comeco (por precaucao)
@@ -809,7 +804,7 @@ FILE *Decompress(FILE *input, btree *huff)
   cont = 0;
   printf("\n Array do pre_order:\n ");
   puts(pre_order);
-  printf("%d\n",strlen(pre_order));
+  printf("%ld\n",strlen(pre_order));
   file_start = tree_size + 2;
   printf(" tree: %d  trash: %d bytes do arq: %d\n\n ",tree_size, trash, file_start);
   huff = tree_from_pre_order(huff, pre_order, &cont);
