@@ -19,22 +19,20 @@ void destroy(p_q *pq);
 
 int main(void)
 {
-	int runs;
+  int runs;
   printf("Pick your queue size: ");
   scanf("%d", &runs);
   p_q *pq = create_priority_queue(runs);
-  printf("%s\n", is_empty(pq) == true ? "true" : false);
+  printf("Creation: %s\n", is_empty(pq) == true ? "true" : false);
   int priority,i = 0;
-  //srand(time(NULL));
+  srand(time(NULL));
 
-  int j,chosen,cpriority,counter = 0;
+    int j,chosen,cpriority,counter = 0;
     int num;
-    //printf("Numero da busca: \n");
-    //scanf("%d", &chosen);
     for (i = 1; i <= runs; i++)
     {
-      //num = rand();
-      enqueue(pq,i,i);
+      num = rand();
+      enqueue(pq,num,num);
     }
   print_priority_queue(pq);
   destroy(pq);
@@ -97,7 +95,7 @@ p_q *enqueue(p_q *pq, int value, int priority)
     current_l->next = current;
   }
   pq->size++;
-  if (pq->size == pq->max_size)
+  if (pq->size != pq->max_size)
   {
     FILE *output;
     output = fopen("priority_queue.csv", "a");
