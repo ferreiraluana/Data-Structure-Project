@@ -28,11 +28,12 @@ int main(void)
   srand(time(NULL));
 
     int j,chosen,cpriority,counter = 0;
-    int num;
+    int num,num2;
     for (i = 1; i <= runs; i++)
     {
+      num2 = rand();
       num = rand();
-      enqueue(pq,num,num);
+      enqueue(pq,num,num2);
     }
   print_priority_queue(pq);
   destroy(pq);
