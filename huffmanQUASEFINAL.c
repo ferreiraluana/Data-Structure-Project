@@ -5,7 +5,6 @@
 #include <stdbool.h>
 
 #define MAX_SIZE 257
-// so falta ajeitar a funcao tree_from_pre_order();
 /*
 /////////////////////////////////
 ////                         ////
@@ -103,7 +102,7 @@ hash* create_dictionary()
   }
   return new_hash;
 }
-//
+
 heap* create_heap()
 {
   heap *new_heap = (heap*) malloc(sizeof(heap));
@@ -114,7 +113,7 @@ heap* create_heap()
     new_heap->data[i] = NULL;
   }
 }
-//
+
 btree* create_btree(void *c, long long int freq, btree *left, btree *right)
 {
   btree *new_btree;
@@ -126,19 +125,7 @@ btree* create_btree(void *c, long long int freq, btree *left, btree *right)
   new_btree->frequence = freq;
   new_btree->left = left;
   new_btree->right = right;
-  printf("criou alguma btree\n");
   return new_btree;
-}
-
-void print_pre(btree *tree, unsigned *tam)
-{
-  if(tree != NULL)
-  {
-    tam[0]++;
-    printf("%c",*((byte*)tree->c));
-    print_pre(tree->left, tam);
-    print_pre(tree->right, tam);
-  }
 }
 
 btree *building_huff_tree(heap *hp, long long int heap_original_size)
@@ -166,7 +153,7 @@ btree *building_huff_tree(heap *hp, long long int heap_original_size)
   hp->size = heap_original_size;
   building_huff_tree(hp, heap_original_size);
 }
-//
+
 btree* create_huffman_tree(unsigned int *freq)
 {
   unsigned int i;
@@ -221,11 +208,6 @@ btree* Huffman(FILE *input, unsigned int *freq) ////////////////////////////////
   puts("");
 
   btree *huff = create_huffman_tree(freq); // manda o array de frequencias para que seja construida a arvore
-
-  puts("");
-
-  printf("\n Arvore de Huffman em pre-ordem:\n\n ");
-  print_in_pre_order(huff);//printa em pre ordem e encontra o tamanho da arvore
   puts("");
 
   return huff;
@@ -258,7 +240,6 @@ void enqueue(heap *hp, btree *tree) // adiciona o item na heap
 //
 void min_heapify(heap *hp, long long int i)
 {
-  printf("entrou na heapify\n");
   long long int biggest;
   long long int left_index = left_index_(hp,i);
   long long int right_index= right_index_(hp,i);
@@ -270,7 +251,6 @@ void min_heapify(heap *hp, long long int i)
   else { biggest = i; }
 
   if(right_index <= hp->size && hp->data[right_index]->frequence > hp->data[biggest]->frequence) biggest = right_index;
-  printf("ta prestes a terminar a heapify ou recursao\n");
   if(hp->data[i]->frequence != hp->data[biggest]->frequence)
   {
     swap(hp->data[i], hp->data[biggest]);
@@ -280,7 +260,6 @@ void min_heapify(heap *hp, long long int i)
 //
 void heapsort(heap *hp)
 {
-  printf("iniciou heapsort\n");
   long long int i;
   for(i = hp->size; i >= 2; i--)
   {
@@ -294,7 +273,6 @@ void heapsort(heap *hp)
 //
 void build_min_heap(heap *hp)
 {
-  printf("entrou build min heap\n");
   long long int i;
   long long int size = hp->size;
   for(i = size/2 ;i >= 1;i--)
@@ -309,7 +287,6 @@ long long int right_index_(heap *hp,long long int i) { return (2*i + 1); }
 
 void swap(btree *a, btree *b)
 {
-  printf("entrou no swap\n");
   btree aux = *a;
   *a = *b;
   *b = aux;
@@ -345,7 +322,7 @@ void put_string_in_hash(hash *ht, void *index, byte *binary)
   strcpy(new_element->binary, binary);
   ht->table[*((byte*)index)] = new_element;
 }
-//
+
 void Hash(hash *ht, btree *huff, byte *binary, long long int *i)
 {
   if(huff != NULL)
@@ -369,7 +346,7 @@ void Hash(hash *ht, btree *huff, byte *binary, long long int *i)
     i[0]--;
   }
 }
-//
+
 void print_dictionary(hash *ht)
 {
   for(int i = 0;i <= 255;i++)
@@ -381,13 +358,13 @@ void print_dictionary(hash *ht)
     }
   }
 }
-//
+
 byte set_bit(byte c, long long int i)
 {
   byte mask = 1 << (7 - i);
   return mask | c;
 }
-//
+
 void make_header(byte *header_string, byte *one, byte *two)
 {
   int i;
@@ -415,7 +392,7 @@ void make_header(byte *header_string, byte *one, byte *two)
     }
   }
 }
-//
+
 byte *Dec_to_binary(long long int n, byte *binary, long long int size)
 {
   long long int i = 0;
@@ -446,7 +423,7 @@ byte *make_pre_order(btree *huff, long long int *cont, byte *pre_order)
 {
   if(huff != NULL)
   {
-    if(huff->left == NULL && huff->right == NULL && (*((byte*)huff->c) == '*' || *((byte*)huff->c)== '\\'))
+    if(huff->left == NULL && huff->right == NULL && (*((byte*)huff->c) == '*' || *((byte*)huff->c) == '\\'))
     {
       pre_order[cont[0]] = '\\';
       cont[0]++;
@@ -458,10 +435,10 @@ byte *make_pre_order(btree *huff, long long int *cont, byte *pre_order)
   }
   return pre_order;
 }
-//
+
 FILE *construct_file(FILE *input, hash *dictionary, byte *pre_order, byte *header_string, int size, byte c) //// talvez tenha q mudar p void aqui tb
 {
-  FILE *output = fopen("output.txt","wb");
+  FILE *output = fopen("output.huff","wb");
 
   long long int p, k;
   long long int i = 0; // usarei para saber onde setar o bit e quando escrevelo no arquivo output
@@ -537,13 +514,9 @@ FILE *construct_file(FILE *input, hash *dictionary, byte *pre_order, byte *heade
   {
     fwrite(&c, 1, 1, output); // mesmo sobrando lixo temos que escrever o byte na output
     trash = 8 - i; // quantidade de bits que ficaram de lixo
-    printf(" Lixo: %lld\n",trash);
     strcpy(header_string, Dec_to_binary(trash, header_string, 3));
   }
-  puts("\n Lixo \\ Tamanho da arvore\n ");
   header_string[16] = NULL;
-  printf(" ");
-  puts(header_string);
   puts("");
 
   byte one;
@@ -559,20 +532,19 @@ FILE *construct_file(FILE *input, hash *dictionary, byte *pre_order, byte *heade
   puts("");
   return output;
 }
-//
+
 int is_bit_i_set(byte c, long long int i)
 {
   byte mask = 1 << i;
   return mask & c;
 }
-//
+
 btree *tree_from_pre_order(btree *huff, byte *pre_order, int *cont) //// consertar isso da arvore
 {
-    printf("entrou na tree from pre order\n");
   void *c;
   if(cont[0] == 0)
   {
-    *((byte*)c) = *((byte*)(pre_order + cont[0]));
+    c = &pre_order[cont[0]];
     huff = create_btree(c, 0, NULL, NULL); /// antes tava &pre_order[cont[0]]; //////////////ajeitar p aritmetica de ponteiro, p esse c,q eh void, receber essa posicao de byte de pre_ordere mandar na create q so aceita void no primeiro parametro
     cont[0]++;
     huff->left = tree_from_pre_order(huff->left, pre_order, cont);
@@ -582,7 +554,7 @@ btree *tree_from_pre_order(btree *huff, byte *pre_order, int *cont) //// consert
   {
     if(pre_order[cont[0]] == '\\')
     {
-    *((byte*)c) = *((byte*)(pre_order + cont[0]+1));
+      c = &pre_order[cont[0] + 1];
       huff = create_btree(c, 0, NULL, NULL); /// antes tava &pre_order[cont[0]+1]; //////////////ajeitar p aritmetica de ponteiro, p esse c,q eh void, receber essa posicao de byte de pre_ordere mandar na create q so aceita void no primeiro parametro
       cont[0] += 2;
       return huff;
@@ -591,14 +563,14 @@ btree *tree_from_pre_order(btree *huff, byte *pre_order, int *cont) //// consert
     {
       if(pre_order[cont[0]] != '*')
       {
-    *((byte*)c) = *((byte*)(pre_order + cont[0])); /// antes tava &pre_order[cont[0]]; //////////////ajeitar p aritmetica de ponteiro, p esse c,q eh void, receber essa posicao de byte de pre_ordere mandar na create q so aceita void no primeiro parametro
+        c = &pre_order[cont[0]]; /// antes tava &pre_order[cont[0]]; //////////////ajeitar p aritmetica de ponteiro, p esse c,q eh void, receber essa posicao de byte de pre_ordere mandar na create q so aceita void no primeiro parametro
         huff = create_btree(c, 0, NULL, NULL);
         cont[0]++;
         return huff;
       }
       else
       {
-    *((byte*)c) = *((byte*)(pre_order + cont[0])); /// antes tava &pre_order[cont[0]]; //////////////ajeitar p aritmetica de ponteiro, p esse c,q eh void, receber essa posicao de byte de pre_ordere mandar na create q so aceita void no primeiro parametro
+        c = &pre_order[cont[0]]; /// antes tava &pre_order[cont[0]]; //////////////ajeitar p aritmetica de ponteiro, p esse c,q eh void, receber essa posicao de byte de pre_ordere mandar na create q so aceita void no primeiro parametro
         huff = create_btree(c, 0, NULL, NULL);
         cont[0]++;
       }
@@ -611,10 +583,10 @@ btree *tree_from_pre_order(btree *huff, byte *pre_order, int *cont) //// consert
 
 FILE *construct_file_decompress(FILE *input, btree *huff,int size_header, int trash)
 {
-  FILE *output = fopen("descompressed.txt","wb");
+  FILE *output = fopen("descompressed.mp4","wb");
   btree *aux = huff;
   int i,cont = 0;
-  void *c1;
+  byte c1;
 
   byte c;
   byte byte_with_trash;
@@ -627,7 +599,6 @@ FILE *construct_file_decompress(FILE *input, btree *huff,int size_header, int tr
   last_byte = ftell(input);
 
   fread(&byte_with_trash, 1,1,input); // so pra printar
-  printf("\n\n posicao do byte com o lixo no arquivo: %ld\n byte com o lixo(Valor na tabela ascii): %d\n\n",last_byte, byte_with_trash);
 
   fseek(input, size_header , SEEK_SET);
   cont = size_header;
@@ -648,8 +619,8 @@ FILE *construct_file_decompress(FILE *input, btree *huff,int size_header, int tr
         }
         if(aux->left == NULL && aux->right == NULL)
         {
-          *((byte*)c1) = *((byte*)aux->c);
-          fwrite(c1, 1, 1, output); ///////////////////////////////////////////////////////
+          c1 = *((byte*)aux->c);
+          fwrite(&c1, 1, 1, output);
           aux = huff;
         }
       }
@@ -669,8 +640,8 @@ FILE *construct_file_decompress(FILE *input, btree *huff,int size_header, int tr
         }
         if(aux->left == NULL && aux->right == NULL)
         {
-          *((byte*)c1) = *((byte*)aux->c);
-          fwrite(c1, 1, 1, output); /////////////////////////////////////////
+          c1 = *((byte*)aux->c);
+          fwrite(&c1, 1, 1, output);
           aux = huff;
         }
       }
@@ -697,7 +668,7 @@ void Decompress(FILE *input, btree *huff)
   long long int i = 0;
 
   int file_start;
-  byte pre_order[512]; ////// tava 520 ///////////////////rever, no 513 printou 1 char a mais
+  byte pre_order[520]; ////// tava 520 ///////////////////rever, no 513 printou 1 char a mais
 
   for(i=0;i<16;i++) // pega o tamanho do lixo e arvore no cabecalho
   {
@@ -732,27 +703,18 @@ void Decompress(FILE *input, btree *huff)
 
   cont = 0;
   aux = tree_size;
-  printf("aux = %d\n",aux);
   while(aux--)
   {
     fscanf(input,"%c",&c);
     pre_order[cont] = c;
     cont++;
-    //aux--;
   }
 
-  printf("\n Array do pre_order:\n ");
-  puts(pre_order);
-  printf("\n\n");
   file_start = tree_size + 2;
-  printf(" tree: %d  trash: %d bytes do comeco do arq: %d\n\n ",tree_size, trash, file_start);
 
   cont = 0;
   huff = tree_from_pre_order(huff, pre_order, &cont);
   unsigned tam = 0; // soh pra funcao print funcionar
-  puts("");
-  printf("\n Arvore de Huffman do arquivo:\n\n ");
-  print_pre(huff,&tam);
   puts("");
   output = construct_file_decompress(input, huff, file_start, trash);
   free(huff);
@@ -799,7 +761,6 @@ int main()
     long long int cont = 0;
 
     Hash(dictionary, huff, binary, &cont); // funcao que adiciona os binarios de cada caracter do dicionario da arvore de huffman
-    print_dictionary(dictionary);
     byte c;
 
     byte pre_order[520] = {0};
