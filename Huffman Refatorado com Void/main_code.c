@@ -11,6 +11,9 @@
 #include "compress.h"
 #include "decompress.h"
 
+#include <CUnit/Basic.h>
+
+//gcc  -o huffman huffman.c -lm -lcunit
 
 /*
 /////////////////////////////////
