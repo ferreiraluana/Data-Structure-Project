@@ -67,7 +67,7 @@ qheap *create_qheap(int capacity)
   curr->capacity = capacity;
   curr->size = 0;
   curr->comparisons = 0;
-  curr->data = (item*)malloc((capacity) * sizeof(item));
+  curr->data = (item*)malloc((capacity+1) * sizeof(item));
   return curr;
 }
 
@@ -91,7 +91,7 @@ void enqueue(qheap *hp, int value, int priority,int chosen)
     {
       FILE *output;
       output = fopen("pq_with_heap.csv", "a+");
-      fprintf(output, "%d;%d\n", hp->size, hp->comparisons);
+      fprintf(output, "%d,%d\n", hp->size, hp->comparisons);
       fclose(output);
     }
 }
@@ -142,5 +142,3 @@ void max_qheapify(qheap *hp, int i)
     max_qheapify(hp,largest);
   }
 }
-
-

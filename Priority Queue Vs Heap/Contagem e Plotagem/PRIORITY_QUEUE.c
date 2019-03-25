@@ -74,6 +74,7 @@ int max(p_q *pq){return(pq->head->value);}
 
 p_q *enqueue(p_q *pq, int value, int priority)
 {
+  pq->comparisons = 0;
   list *current = (list*)malloc(sizeof(list));
   current->value = value;
   current->priority = priority;
@@ -99,7 +100,7 @@ p_q *enqueue(p_q *pq, int value, int priority)
   if (pq->size != pq->max_size)
   {
     FILE *output;
-    output = fopen("priority_queue.csv", "a");
+    output = fopen("priority_queue.csv", "a+");
     fprintf(output, "%d,%d\n", pq->size, pq->comparisons);
     fclose(output);
   }
