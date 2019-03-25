@@ -84,7 +84,7 @@ btree *dequeue(heap *hp) // remove o item da heap
 
 void enqueue(heap *hp, btree *tree)
 {
-  hp->size++;
+  hp->size+=1;
   hp->data[hp->size] = tree;
   long long int key_index = hp->size;
   long long int parent_index = get_parent_index(hp, hp->size);
@@ -120,7 +120,7 @@ void min_heapify(heap *hp, long long int i)
 void heapsort(heap *hp)
 {
   long long int i;
-  for(i = hp->size; i >= 2; i--)
+  for(i = hp->size; i >= 1; i--)
   {
     swap(hp->data[1], hp->data[i]);
 
@@ -148,7 +148,7 @@ void test_create_heap()
 
 void test_create_btree()
 {
-  btree *tree = create_btree('a', 1, NULL, NULL);
+  btree *tree;// = create_btree('a', 1, NULL, NULL);
   CU_ASSERT(tree != NULL);
 } 
 
